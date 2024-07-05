@@ -17,8 +17,8 @@
 #include <sys/ioctl.h>
 #define CTRL_KEY(k) ((k) & 0x1f)
 
-#define WRITE_CLEAR_SCREEN() write(STDOUT_FILENO,"\x1b[2J", 4)
-#define WRITE_RESET_CURSOR() write(STDOUT_FILENO, "\x1b[H", 3)
+#define submit_clear_screen() write(STDOUT_FILENO,"\x1b[2J", 4)
+#define submit_reset_cursor() write(STDOUT_FILENO, "\x1b[H", 3)
 
 struct MK_Editor
 {
@@ -42,6 +42,10 @@ internal void mk_buffer_push(MK_Buffer *buffer, char *c, int len)
 	
 	buffer->used += len;
 }
+
+#define mk_buffer_push_reset_cursor(buffer) mk_buffer_push(buffer, "\x1b[H", 3)
+#define mk_buffer_push_hide_cursor(buffer) mk_buffer_push(buffer, "\x1b[?25l", 6)
+#define mk_buffer_push_show_cursor(buffer) mk_buffer_push(buffer, "\x1b[?25h", 6);
 
 internal void mk_buffer_pushf(MK_Buffer *buffer, Arena *arena, const char *fmt, ...)
 {
@@ -93,7 +97,7 @@ int main()
 	tcgetattr(STDIN_FILENO, &start);
 	
 	enable_raw_mode();
-	
+	submit_clear_screen();
 	
 	char c;
 	while(read(STDIN_FILENO, &c, 1) == 1)
@@ -103,11 +107,27 @@ int main()
 		MK_Buffer buf = {};
 		buf.base = push_array(&arena, char, Megabytes(1));
 		
+		mk_buffer_push_hide_cursor(&buf);
+		mk_buffer_push_reset_cursor(&buf);
+		
 		if(c == CTRL_KEY('q'))
 		{
 			break;
 		}
-		
+		switch (c) {
+			case 'a':
+      editor.pos.x--;
+      break;
+			case 'd':
+      editor.pos.x++;
+      break;
+			case 'w':
+      editor.pos.y--;
+      break;
+			case 's':
+      editor.pos.y++;
+      break;
+		}
 		// rows
 		{
 			v2i size = get_win_size();
@@ -119,14 +139,16 @@ int main()
 			mk_buffer_pushf(&buf, &arena, "~");
 		}
 		
+		mk_buffer_pushf(&buf, &arena, "\x1b[%d;%dH", editor.pos.y + 1, editor.pos.x + 1);
 		
+		mk_buffer_push_show_cursor(&buf);
 		mk_buffer_submit(&buf);
 		
 		arena_temp_end(&temp);
 	}
 	
-	WRITE_CLEAR_SCREEN();
-	WRITE_RESET_CURSOR();
+	submit_clear_screen();
+	submit_reset_cursor();
 	
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &start);
 	return 0;
