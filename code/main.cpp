@@ -18,6 +18,7 @@
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 #define WRITE_CLEAR_SCREEN() write(STDOUT_FILENO,"\x1b[2J", 4)
+#define WRITE_RESET_CURSOR() write(STDOUT_FILENO, "\x1b[H", 3)
 
 struct MK_Editor
 {
@@ -93,6 +94,7 @@ int main()
 	
 	enable_raw_mode();
 	
+	
 	char c;
 	while(read(STDIN_FILENO, &c, 1) == 1)
 	{
@@ -106,13 +108,25 @@ int main()
 			break;
 		}
 		
+		// rows
+		{
+			v2i size = get_win_size();
+			
+			for(i32 i = 0; i < size.y - 1; i ++)
+			{
+				mk_buffer_pushf(&buf, &arena, "~\r\n");
+			}
+			mk_buffer_pushf(&buf, &arena, "~");
+		}
+		
+		
 		mk_buffer_submit(&buf);
 		
 		arena_temp_end(&temp);
 	}
 	
-	write(STDOUT_FILENO, "\x1b[2J", 4);
-	write(STDOUT_FILENO, "\x1b[H", 3);
+	WRITE_CLEAR_SCREEN();
+	WRITE_RESET_CURSOR();
 	
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &start);
 	return 0;
