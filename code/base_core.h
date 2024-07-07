@@ -96,10 +96,10 @@ internal void arena_innit(Arena* arena, size_t size, void* base);
 internal void arena_innit_align(Arena *arena, size_t size, void *base, u64 align);
 internal void mem_cpy(void *dst, void *src, size_t size);
 
-#if defined _WIN32
+#if defined OS_WIN32
 #define YK_API __declspec(dllexport)
 #else
-#define YK_API
+#define YK_API __attribute__((visibility("default")))
 #endif
 
 #endif //BASE_CORE_H

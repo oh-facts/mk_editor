@@ -25,17 +25,26 @@ void str8_cpy(Str8 *dst, Str8 *src)
   }
 }
 
-Str8 push_str8(Arena *arena, const char *fmt, va_list args)
+Str8 push_str8f(Arena *arena, char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  Str8 result = push_str8fv(arena, fmt, args);
+  va_end(args);
+  return(result);
+}
+
+Str8 push_str8fv(Arena *arena, char *fmt, va_list args)
 {
   Str8 out = {};
-  
   va_list args_copy;
   va_copy(args_copy, args);
   
   int bytes_req = stbsp_vsnprintf(0, 0, fmt, args) + 1;
   
   out.c = push_array(arena, u8, bytes_req);
-  out.len = stbsp_vsnprintf((char *)out.c, bytes_req, fmt, args_copy);
+  
+	out.len = stbsp_vsnprintf((char *)out.c, bytes_req, fmt, args_copy);
   va_end(args_copy);
   
   return out;

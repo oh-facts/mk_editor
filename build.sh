@@ -1,13 +1,16 @@
 #!/bin/bash
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)"
 
 for arg in "$@"
 do
     case $arg in
         app)
-            compile=1
-            ;;
+            app=1
+            ;;        
+        app2)
+            app2=1
+            ;;       
         clean)
             clean=1
             ;;
@@ -24,12 +27,20 @@ if [ "$clean" == "1" ]; then
     rm -rf "$SCRIPT_DIR/out"
 fi
 
-if [ "$compile" == "1" ]; then
+if [ "$app" == "1" ]; then
     if [ ! -d "$SCRIPT_DIR/out" ]; then
         mkdir "$SCRIPT_DIR/out"
     fi
 
     clang++ $common_flags code/main.cpp -o "$SCRIPT_DIR/out/yk"
+fi
+
+if [ "$app2" == "1" ]; then
+    if [ ! -d "$SCRIPT_DIR/out" ]; then
+        mkdir "$SCRIPT_DIR/out"
+    fi
+
+    clang++ $common_flags -fPIC -shared code/mk_editor.cpp -o "$SCRIPT_DIR/out/libyk.so"
 fi
 
 if [ $? -ne 0 ]; then
