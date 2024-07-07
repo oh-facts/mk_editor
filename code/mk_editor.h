@@ -89,16 +89,6 @@ struct MK_Buffer
 	size_t used;
 };
 
-internal void mk_buffer_push(MK_Buffer *buffer, char *c, int len)
-{
-	for(u32 i = 0; i < len; i ++)
-	{
-		buffer->base[buffer->used + i] = c[i];
-	}
-	
-	buffer->used += len;
-}
-
 struct TCXT
 {
 	Arena arenas[2];
@@ -139,6 +129,16 @@ internal Arena *tcxt_get_scratch(Arena **conflicts, u64 count)
 
 #define scratch_begin(conflicts, count) arena_temp_begin(tcxt_get_scratch(conflicts, count))
 #define scratch_end(scratch) arena_temp_end(scratch);
+
+internal void mk_buffer_push(MK_Buffer *buffer, char *c, int len)
+{
+	for(u32 i = 0; i < len; i ++)
+	{
+		buffer->base[buffer->used + i] = c[i];
+	}
+	
+	buffer->used += len;
+}
 
 internal void mk_buffer_pushf(MK_Buffer *buffer, const char *fmt, ...)
 {
