@@ -155,7 +155,7 @@ void update_and_render(MK_Platform *pf, char c)
 	buf.base = push_array(trans, char, Megabytes(1));
 	
 	mk_buffer_push_clear_screen(&buf);
-	//mk_buffer_push_hide_cursor(&buf);
+	mk_buffer_push_hide_cursor(&buf);
 	mk_buffer_push_reset_cursor(&buf);
 	
 	editor->size = get_win_size();
@@ -274,7 +274,7 @@ void update_and_render(MK_Platform *pf, char c)
 		}
 	}
 	
-	//mk_buffer_push_show_cursor(&buf);
+	mk_buffer_push_show_cursor(&buf);
 	mk_buffer_submit(&buf);
 	
 	arena_temp_end(&temp);

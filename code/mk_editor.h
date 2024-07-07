@@ -42,7 +42,6 @@ enum MK_KEY
 	
 	MK_KEY_DEL,
 	
-	
 	MK_KEY_COUNT
 };
 
@@ -132,12 +131,51 @@ internal Arena *tcxt_get_scratch(Arena **conflicts, u64 count)
 
 internal void mk_buffer_push(MK_Buffer *buffer, char *c, int len)
 {
+	u32 bytes_used = 0;
+	u32 line_len = 0;
 	for(u32 i = 0; i < len; i ++)
 	{
-		buffer->base[buffer->used + i] = c[i];
+		if(line_len > 80)
+		{
+			buffer->base[buffer->used + bytes_used] = '\r';
+			bytes_used++;
+			buffer->base[buffer->used + bytes_used] = '\n';
+			bytes_used++;
+			buffer->base[buffer->used + bytes_used] = c[i];
+			bytes_used++;
+			line_len = 0;
+		}
+		else
+		{
+			if(c[i] == '\t')
+			{
+				buffer->base[buffer->used + bytes_used] = ' ';
+				bytes_used++;
+				line_len++;
+			}
+			else if(c[i] == '\r')
+			{
+				
+			}
+			else if(c[i] == '\n')
+			{
+				buffer->base[buffer->used + bytes_used] = '\r';
+				bytes_used++;
+				buffer->base[buffer->used + bytes_used] = '\n';
+				bytes_used++;
+				line_len = 0;
+			}
+			else
+			{
+				buffer->base[buffer->used + bytes_used] = c[i];
+				bytes_used++;
+				line_len++;
+			}
+		}
+		
 	}
 	
-	buffer->used += len;
+	buffer->used += bytes_used++;
 }
 
 internal void mk_buffer_pushf(MK_Buffer *buffer, const char *fmt, ...)
@@ -153,7 +191,6 @@ internal void mk_buffer_pushf(MK_Buffer *buffer, const char *fmt, ...)
 	mk_buffer_push(buffer, str, len);
 	
 	scratch_end(&scratch);
-	
 }
 
 #define mk_buffer_push_reset_cursor(buffer) mk_buffer_push(buffer, "\x1b[H", 3)
@@ -181,14 +218,14 @@ internal Str8 os_linux_get_app_dir(Arena *arena)
 {
 	char buffer[256];
   ssize_t len = readlink("/proc/self/exe", buffer, 256);
-  
+	
 	char *c = &buffer[len];
   while(*(--c) != '/')
   {
     *c = 0;
     --len;
   }
-  
+	
   u8 *str = push_array(arena, u8, len);
 	mem_cpy(str, buffer, len);
 	
