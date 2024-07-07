@@ -5,6 +5,10 @@
 
 int main(int argc, char **argv)
 {
+	
+	submit_clear_screen();
+	submit_reset_cursor();
+	
 	Arena arena;
 	arena_innit(&arena, Megabytes(1), calloc(1, Megabytes(1)));
 	
@@ -23,7 +27,6 @@ int main(int argc, char **argv)
 	pf.argv = argv;
 	pf.app_dir = app_dir;
 	
-	
 	if(!handle)
 	{
 		printf("dll not found\n\r");
@@ -36,14 +39,28 @@ int main(int argc, char **argv)
 		printf("fn not found\n\r");
 	}
 	
-	//printf("Do not enter is written on the doorway.\n");
-	//printf("Why can't everyone just go away.\n");
+	printf("Do not enter is written on the doorway.\n");
+	printf("Why can't everyone just go away.\n");
+	
+	printf("\n\n");
+	
+	printf("Welcome to the mk editor dev build\n");
+	
+	printf("ctrl + q to quit\n");
+	printf("ctrl + r to hot reload\n");
+	printf("ctrl + i to toggle between insert and normal\n");
+	
+	printf("\n\n");
+	
+	printf("press any key to continue\n");
 	
 	enable_raw_mode();
+	char c = '\0';
+	read(STDIN_FILENO, &c, 1);
 	
 	submit_clear_screen();
 	submit_reset_cursor();
-	char c = '\0';
+	
 	do
 	{
 		if(c == CTRL_KEY('q'))
