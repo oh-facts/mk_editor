@@ -1,49 +1,24 @@
 #!/bin/bash
+cd "${0%/*}"
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)"
+for arg in "$@"; do eval "$arg=1"; done
 
-for arg in "$@"
-do
-    case $arg in
-        app)
-            app=1
-            ;;        
-        app2)
-            app2=1
-            ;;       
-        clean)
-            clean=1
-            ;;
-        *)
-            echo "Unknown option: $arg"
-            exit 1
-            ;;
-    esac
-done
+if [ "$help" == "1" ]; then
+    echo "./build.sh <arg 1> <arg 2> ... <arg n>"
+    echo ""
+    echo "valid args"
+    echo "----------"
+    echo "mk: compile editor"
+    echo "pf: compile platform"
+    echo "clean: delete out/"
+fi
 
 common_flags="-std=c++17 -msse4.1 -O0 -fno-rtti -fno-exceptions -Wall -Wno-unused-function -Wno-writable-strings -Wno-comment -g"
 
-if [ "$clean" == "1" ]; then
-    rm -rf "$SCRIPT_DIR/out"
-fi
+[ "$clean" == "1" ] && echo "deleted /out" && rm -rf "out/"
 
-if [ "$app" == "1" ]; then
-    if [ ! -d "$SCRIPT_DIR/out" ]; then
-        mkdir "$SCRIPT_DIR/out"
-    fi
+[ ! -d "out" ] && mkdir "out"
 
-    clang++ $common_flags code/main.cpp -o "$SCRIPT_DIR/out/yk"
-fi
+[ "$pf" == "1" ] && echo "compiled platform" && clang++ $common_flags code/main.cpp -o "out/yk"
 
-if [ "$app2" == "1" ]; then
-    if [ ! -d "$SCRIPT_DIR/out" ]; then
-        mkdir "$SCRIPT_DIR/out"
-    fi
-
-    clang++ $common_flags -fPIC -shared code/mk_editor.cpp -o "$SCRIPT_DIR/out/libyk.so"
-fi
-
-if [ $? -ne 0 ]; then
-    echo "Platform compilation failed"
-    exit 1
-fi
+[ "$mk" == "1" ] && echo "compiled editor" && clang++ $common_flags -fPIC -shared code/mk_editor.cpp -o "out/libyk.so"
