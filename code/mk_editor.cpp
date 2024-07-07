@@ -1,3 +1,4 @@
+/* date = May 1st 2024 2:40 pm */
 #include "mk_editor.h"
 
 enum FILE_TYPE
@@ -17,33 +18,33 @@ enum FILE_TYPE
 u8 *read_file(Arena *arena, const char *filepath, FILE_TYPE type)
 {
   FILE *file;
-  
-  local_persist char *file_type_table[FILE_TYPE_COUNT] = 
+	
+  local_persist char *file_type_table[FILE_TYPE_COUNT] =
   {
     "r",
     "rb"
   };
-  
+	
   _file_open(&file, filepath, file_type_table[type]);
-  
+	
   if(!file)
   {
     printf("file %s not found\n", filepath);
     INVALID_CODE_PATH();
   }
-  
+	
   fseek(file, 0, SEEK_END);
-  
+	
   i32 len = ftell(file);
   //print("%d", len);
-  
+	
   fseek(file, 0, SEEK_SET);
-  
+	
   u8 *buffer = push_array(arena, u8, len);
   fread(buffer, sizeof(u8), len, file);
-  
+	
   fclose(file);
-  
+	
   return buffer;
 }
 
@@ -118,10 +119,10 @@ void update_and_render(MK_Platform *pf, char c)
 			editor->pos.y = 1;
 			editor->pos.x = 1;
 			
-			u8 *file_data = read_file(trans, (char*)abs_file_path.c, FILE_TYPE_BINARY);
+			u8 *file_data = read_file(trans, (char*)abs_file_path.c, FILE_TYPE_TEXT);
 			
 			// TODO(mizu): Allow arbitary sized lines. Use chunked lists.
-			editor->file.lines = push_array(arena, MK_Line, 10000);
+			editor->file.lines = push_array(arena, MK_Line, 100000);
 			
 			char *start = (char *)file_data;
 			char *cur = start;
@@ -242,12 +243,12 @@ void update_and_render(MK_Platform *pf, char c)
 	
 	// rows
 	{
-		Str8 editor_msg = push_str8f(trans, "%s row:%d col: %d mk editor v%d.%d.%d", 
+		Str8 editor_msg = push_str8f(trans, "%s row:%d col: %d mk editor v%d.%d.%d",
 																 editor->file.name.c,
 																 editor->pos.y + start,
 																 editor->pos.x,
-																 MK_VERSION_MAJOR, 
-																 MK_VERSION_MINOR, 
+																 MK_VERSION_MAJOR,
+																 MK_VERSION_MINOR,
 																 MK_VERSION_PATCH);
 		
 		for(i32 i = 0; i < editor->size.x - 1 - editor_msg.len; i ++)
