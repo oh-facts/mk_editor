@@ -166,7 +166,7 @@ void update_and_render(MK_Platform *pf, char c)
 		insert = !insert;
 	}
 	
-	local_persist u32 start = 0;
+	local_persist i32 start = 0;
 	
 	if(!insert)
 	{
@@ -199,7 +199,7 @@ void update_and_render(MK_Platform *pf, char c)
 					if(start + editor->size.y < editor->file.num_lines + 2)
 					{
 						start++;
-						mk_buffer_push_clear_screen(&buf);
+						
 					}
 					
 				}
@@ -219,6 +219,54 @@ void update_and_render(MK_Platform *pf, char c)
 					editor->pos.x --;
 				}
 			}break;
+			case MK_KEY_PAGE_DOWN:
+			{
+				if(editor->pos.y < editor->size.y - 1)
+				{
+					editor->pos.y += editor->size.y;
+					
+					if(editor->pos.y > editor->size.y)
+					{
+						editor->pos.y = editor->size.y - 1;
+					}
+					
+				}
+				else
+				{
+					
+					start += editor->size.y;
+					
+					if(start + editor->pos.y > editor->file.num_lines - 1)
+					{
+						start = editor->file.num_lines - editor->size.y + 2;
+					}
+					
+				}
+				
+			}break;
+			case MK_KEY_PAGE_UP:
+			{
+				if(editor->pos.y > 1)
+				{
+					editor->pos.y -= editor->size.y;
+					
+					if(editor->pos.y < 1)
+					{
+						editor->pos.y = 1;
+					}
+					
+				}
+				else
+				{
+					start -= editor->size.y;
+					
+					if(start < 0)
+					{
+						start += editor->size.y;
+					}
+				}
+				
+			}break;
 			default:
 			{
 				
@@ -226,7 +274,7 @@ void update_and_render(MK_Platform *pf, char c)
 		}
 	}
 	
-	u32 end = start + editor->size.y;
+	i32 end = start + editor->size.y;
 	
 	if(end > editor->file.num_lines)
 	{
@@ -234,7 +282,7 @@ void update_and_render(MK_Platform *pf, char c)
 	}
 	//printf("%d %d\r\n", start, end);
 	//INVALID_CODE_PATH();
-	for(u32 i = start; i < end; i ++)
+	for(i32 i = start; i < end; i ++)
 	{
 		mk_buffer_push(&buf, (char*)editor->file.lines[i].data, editor->file.lines[i].num_col);
 	}
