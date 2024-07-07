@@ -36,13 +36,15 @@ int main(int argc, char **argv)
 		printf("fn not found\n\r");
 	}
 	
-	printf("Do not enter is written on the doorway.\n");
-	printf("Why can't everyone just go away.\n");
+	//printf("Do not enter is written on the doorway.\n");
+	//printf("Why can't everyone just go away.\n");
 	
 	enable_raw_mode();
 	
-	char c;
-	while(read(STDIN_FILENO, &c, 1) == 1)
+	submit_clear_screen();
+	submit_reset_cursor();
+	char c = '\0';
+	do
 	{
 		if(c == CTRL_KEY('q'))
 		{
@@ -55,7 +57,7 @@ int main(int argc, char **argv)
 			update_and_render = (update_and_render_fn)dlsym(handle, "update_and_render");
 		}
 		update_and_render(&pf, c);
-	}
+	}while(read(STDIN_FILENO, &c, 1) == 1);
 	
 	submit_clear_screen();
 	submit_reset_cursor();

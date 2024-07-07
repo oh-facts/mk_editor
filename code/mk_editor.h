@@ -99,7 +99,7 @@ internal void mk_buffer_push(MK_Buffer *buffer, char *c, int len)
 	buffer->used += len;
 }
 
-internal void mk_buffer_pushf(MK_Buffer *buffer, Arena *arena, const char *fmt, ...)
+internal void mk_buffer_pushf(MK_Buffer *buffer, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);

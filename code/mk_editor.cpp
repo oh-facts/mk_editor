@@ -85,6 +85,7 @@ void update_and_render(MK_Platform *pf, char c)
 	if(!editor->initialized)
 	{
 		editor->initialized = true;
+		
 		arena_innit(arena, pf->mem_size / 2, (u8*)pf->memory + sizeof(*editor));
 		arena_innit(trans, pf->mem_size / 2 - sizeof(*editor), arena->base + arena->size);
 		
@@ -99,7 +100,6 @@ void update_and_render(MK_Platform *pf, char c)
 				if(*buf == '\n')
 				{
 					editor->file.num_lines++;
-					printf("rrere\r\n");
 				}
 				buf++;
 			}
@@ -113,76 +113,90 @@ void update_and_render(MK_Platform *pf, char c)
 	MK_Buffer buf = {};
 	buf.base = push_array(trans, char, Megabytes(1));
 	
-	mk_buffer_push_clear_screen(&buf);
 	mk_buffer_push_hide_cursor(&buf);
 	mk_buffer_push_reset_cursor(&buf);
 	
 	editor->size = get_win_size();
 	
-	MK_KEY mv_key = mk_key_from_char(c);
-	
-	switch(mv_key)
+	local_persist b32 insert = 0;
+	if(c == CTRL_KEY('I'))
 	{
-		case MK_KEY_UP:
+		insert = !insert;
+	}
+	
+	if(!insert)
+	{
+		MK_KEY mv_key = mk_key_from_char(c);
+		switch(mv_key)
 		{
-			if(editor->pos.y > 0)
+			case MK_KEY_UP:
 			{
-				editor->pos.y --;
-			}
-		}break;
-		case MK_KEY_DOWN:
-		{
-			if(editor->pos.y < editor->size.y - 1)
+				if(editor->pos.y > 0)
+				{
+					editor->pos.y --;
+				}
+			}break;
+			case MK_KEY_DOWN:
 			{
-				editor->pos.y ++;
-			}
-		}break;
-		case MK_KEY_RIGHT:
-		{
-			if(editor->pos.x < editor->size.x - 1)
+				if(editor->pos.y < editor->size.y - 1)
+				{
+					editor->pos.y ++;
+				}
+			}break;
+			case MK_KEY_RIGHT:
 			{
-				editor->pos.x ++;
-			}
-		}break;
-		case MK_KEY_LEFT:
-		{
-			if(editor->pos.x > 0)
+				if(editor->pos.x < editor->size.x - 1)
+				{
+					editor->pos.x ++;
+				}
+			}break;
+			case MK_KEY_LEFT:
 			{
-				editor->pos.x --;
+				if(editor->pos.x > 0)
+				{
+					editor->pos.x --;
+				}
+			}break;
+			default:
+			{
+				
 			}
-		}break;
-		default:
-		{
-			
 		}
 	}
-	mk_buffer_pushf(&buf, trans, "%s\r\n", editor->file);
+	mk_buffer_pushf(&buf,"%s\r\n", editor->file);
 	
 	// rows
 	{
 		
 		for(i32 i = editor->file.num_lines; i < editor->size.y - 1; i ++)
 		{
-			mk_buffer_pushf(&buf, trans, "~\r\n");
+			mk_buffer_pushf(&buf, "~\r\n");
 		}
-		mk_buffer_pushf(&buf, trans, "~");
+		mk_buffer_pushf(&buf, "~");
 		
-		Str8 editor_msg = push_str8f(trans, "mk editor v%d.%d%d", 
+		Str8 editor_msg = push_str8f(trans, "mk editor v%d.%d.%d", 
 																 MK_VERSION_MAJOR, 
 																 MK_VERSION_MINOR, 
 																 MK_VERSION_PATCH);
 		
 		for(i32 i = 0; i < editor->size.x - 1 - editor_msg.len; i ++)
 		{
-			mk_buffer_pushf(&buf, trans, " ");
+			mk_buffer_pushf(&buf, " ");
 		}
-		mk_buffer_pushf(&buf, trans, "%s", editor_msg.c);
+		mk_buffer_pushf(&buf,"%s", editor_msg.c);
 		
 	}
 	
-	mk_buffer_pushf(&buf, trans, "\x1b[%d;%dH", editor->pos.y + 1, editor->pos.x + 1);
+	mk_buffer_pushf(&buf,"\x1b[%d;%dH", editor->pos.y + 1, editor->pos.x + 1);
 	
-	
+	if(insert)
+	{
+		if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+		{
+			mk_buffer_pushf(&buf, "%c", c);
+			editor->pos.x++;
+		}
+	}
 	
 	mk_buffer_push_show_cursor(&buf);
 	mk_buffer_submit(&buf);
