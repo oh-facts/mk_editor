@@ -2,6 +2,11 @@
 
 #ifndef MK_EDITOR_H
 #define MK_EDITOR_H
+
+#define MK_VERSION_MAJOR (0)
+#define MK_VERSION_MINOR (0)
+#define MK_VERSION_PATCH (1)
+
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 #define submit_clear_screen() write(STDOUT_FILENO,"\x1b[2J", 4)
