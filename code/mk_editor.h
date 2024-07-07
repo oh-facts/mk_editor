@@ -99,17 +99,61 @@ internal void mk_buffer_push(MK_Buffer *buffer, char *c, int len)
 	buffer->used += len;
 }
 
+struct TCXT
+{
+	Arena arenas[2];
+};
+
+global TCXT tcxt;
+
+void tcxt_init()
+{
+	for(u32 i = 0; i < ARRAY_LEN(tcxt.arenas); i ++)
+	{
+		arena_innit(&tcxt.arenas[i], Megabytes(10), calloc(1,Megabytes(10)));
+	}
+}
+
+internal Arena *tcxt_get_scratch(Arena **conflicts, u64 count)
+{
+	Arena *out = 0;
+	for(u32 i = 0; i < ARRAY_LEN(tcxt.arenas); i ++)
+	{
+		b32 has_conflict = 0;
+		for(u32 j = 0; j < count; j ++)
+		{
+			if(&tcxt.arenas[i] == conflicts[j])
+			{
+				has_conflict = 1;
+				break;
+			}
+		}
+		if(!has_conflict)
+		{
+			out = &tcxt.arenas[i];
+		}
+	}
+	
+	return out;
+}
+
+#define scratch_begin(conflicts, count) arena_temp_begin(tcxt_get_scratch(conflicts, count))
+#define scratch_end(scratch) arena_temp_end(scratch);
+
 internal void mk_buffer_pushf(MK_Buffer *buffer, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-	
-	char str[256];
-	u32 len = stbsp_vsnprintf(str, 256, fmt, args);
+	Arena_temp scratch = scratch_begin(0,0);
+	char *str = push_array(scratch.arena, char, Megabytes(1));
+	u32 len = stbsp_vsnprintf(str, Megabytes(1), fmt, args);
 	
 	va_end(args);
 	
 	mk_buffer_push(buffer, str, len);
+	
+	scratch_end(&scratch);
+	
 }
 
 #define mk_buffer_push_reset_cursor(buffer) mk_buffer_push(buffer, "\x1b[H", 3)

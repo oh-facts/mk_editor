@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 	tcgetattr(STDIN_FILENO, &start);
 	
 	MK_Platform pf;
-	pf.mem_size = Megabytes(10);
+	pf.mem_size = Megabytes(20);
 	pf.memory = calloc(1, pf.mem_size);
 	pf.argc = argc;
 	pf.argv = argv;

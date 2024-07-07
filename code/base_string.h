@@ -24,7 +24,9 @@ internal Str8 str8_join(Arena *arena, Str8 a, Str8 b)
 	out.c = push_array(arena, u8, a.len + b.len);
 	
 	mem_cpy(out.c, a.c, a.len);
-	mem_cpy((u8*)out.c + a.len, b.c, b.len * sizeof(u8));
+	
+	mem_cpy((u8*)out.c + a.len, b.c, b.len);
+	printf("%s %lu\r\n", b.c, b.len);
 	
 	out.len = a.len + b.len;
 	return out;

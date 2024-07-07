@@ -85,16 +85,20 @@ void update_and_render(MK_Platform *pf, char c)
 	if(!editor->initialized)
 	{
 		editor->initialized = true;
-		
-		arena_innit(arena, pf->mem_size / 2, (u8*)pf->memory + sizeof(*editor));
-		arena_innit(trans, pf->mem_size / 2 - sizeof(*editor), arena->base + arena->size);
+		tcxt_init();
+		arena_innit(arena, pf->mem_size / 2, (u8*)pf->memory + sizeof(MK_Editor));
+		arena_innit(trans, pf->mem_size / 2, arena->base + arena->size);
 		
 		if(pf->argc == 2)
 		{
-			Str8 abs_file_path = str8_join(trans, pf->app_dir, str8_lit(pf->argv[1]));
+			Str8 arg_str = push_str8f(trans, pf->argv[1]);
+			Str8 abs_file_path = str8_join(trans, pf->app_dir, arg_str);
+			
 			editor->file.data = read_file(arena, (char*)abs_file_path.c, FILE_TYPE_BINARY);
+			
 			editor->file.num_lines++;
 			char *buf = (char*)editor->file.data;
+			
 			while(*buf)
 			{
 				if(*buf == '\n')
@@ -103,9 +107,7 @@ void update_and_render(MK_Platform *pf, char c)
 				}
 				buf++;
 			}
-			
 		}
-		
 	}
 	
 	Arena_temp temp = arena_temp_begin(trans);
@@ -163,7 +165,9 @@ void update_and_render(MK_Platform *pf, char c)
 			}
 		}
 	}
-	mk_buffer_pushf(&buf,"%s\r\n", editor->file);
+	
+	
+	mk_buffer_pushf(&buf,"%s\r\n", editor->file.data);
 	
 	// rows
 	{
@@ -202,4 +206,5 @@ void update_and_render(MK_Platform *pf, char c)
 	mk_buffer_submit(&buf);
 	
 	arena_temp_end(&temp);
+	
 }
