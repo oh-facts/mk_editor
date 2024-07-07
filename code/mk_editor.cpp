@@ -1,22 +1,3 @@
-#include "base_core.h"
-#include "base_core.cpp"
-
-#include "stdio.h"
-
-#define STB_SPRINTF_IMPLEMENTATION
-#include "stb_sprintf.h"
-#include "base_string.h"
-#include "base_string.cpp"
-
-#include "base_math.h"
-#include "base_math.cpp"
-
-#include <termios.h>
-
-#include <unistd.h>
-#include <ctype.h>
-#include <sys/ioctl.h>
-
 #include "mk_editor.h"
 
 enum FILE_TYPE
@@ -26,6 +7,7 @@ enum FILE_TYPE
   FILE_TYPE_COUNT
 };
 
+// ty pine
 #if defined(OS_WIN32)
 #define _file_open(file, filepath, mode) fopen_s(file, filepath, mode)
 #elif defined (OS_LINUX)
@@ -65,6 +47,21 @@ u8 *read_file(Arena *arena, const char *filepath, FILE_TYPE type)
   return buffer;
 }
 
+v2i mk_get_cursor_pos()
+{
+	v2i out = {};
+	printf("\033[6n");
+	scanf("\033[%d;%dR", &out.x, &out.y);
+	
+	return out;
+}
+
+struct MK_File
+{
+	u8 *data;
+	i32 num_lines;
+};
+
 struct MK_Editor
 {
 	Arena arena;
@@ -72,7 +69,7 @@ struct MK_Editor
 	b32 initialized;
 	v2i pos;
 	v2i size;
-	u8 *file;
+	MK_File file;
 };
 
 extern "C"
@@ -91,7 +88,24 @@ void update_and_render(MK_Platform *pf, char c)
 		arena_innit(arena, pf->mem_size / 2, (u8*)pf->memory + sizeof(*editor));
 		arena_innit(trans, pf->mem_size / 2 - sizeof(*editor), arena->base + arena->size);
 		
-		editor->file = read_file(arena, "out/hi.txt", FILE_TYPE_BINARY);
+		if(pf->argc == 2)
+		{
+			Str8 abs_file_path = str8_join(trans, pf->app_dir, str8_lit(pf->argv[1]));
+			editor->file.data = read_file(arena, (char*)abs_file_path.c, FILE_TYPE_BINARY);
+			editor->file.num_lines++;
+			char *buf = (char*)editor->file.data;
+			while(*buf)
+			{
+				if(*buf == '\n')
+				{
+					editor->file.num_lines++;
+					printf("rrere\r\n");
+				}
+				buf++;
+			}
+			
+		}
+		
 	}
 	
 	Arena_temp temp = arena_temp_begin(trans);
@@ -142,10 +156,12 @@ void update_and_render(MK_Platform *pf, char c)
 			
 		}
 	}
+	mk_buffer_pushf(&buf, trans, "%s\r\n", editor->file);
 	
 	// rows
 	{
-		for(i32 i = 0; i < editor->size.y - 1; i ++)
+		
+		for(i32 i = editor->file.num_lines; i < editor->size.y - 1; i ++)
 		{
 			mk_buffer_pushf(&buf, trans, "~\r\n");
 		}
@@ -166,9 +182,7 @@ void update_and_render(MK_Platform *pf, char c)
 	
 	mk_buffer_pushf(&buf, trans, "\x1b[%d;%dH", editor->pos.y + 1, editor->pos.x + 1);
 	
-	mk_buffer_pushf(&buf, trans, "%s", editor->file);
 	
-	mk_buffer_pushf(&buf, trans, "%c", c);
 	
 	mk_buffer_push_show_cursor(&buf);
 	mk_buffer_submit(&buf);

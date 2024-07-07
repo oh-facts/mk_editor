@@ -1,37 +1,34 @@
-#include "base_core.h"
-#include "base_core.cpp"
-#include "stdio.h"
-#include "stdlib.h"
-#define STB_SPRINTF_IMPLEMENTATION
-#include "stb_sprintf.h"
-#include "base_string.h"
-#include "base_string.cpp"
-
-#include "base_math.h"
-#include "base_math.cpp"
-
-#include <termios.h>
-
-#include <unistd.h>
-#include <ctype.h>
-#include <sys/ioctl.h>
-
 #include "mk_editor.h"
 
+#include "stdlib.h"
 #include <dlfcn.h>
-int main()
+
+int main(int argc, char **argv)
 {
+	Arena arena;
+	arena_innit(&arena, Megabytes(1), calloc(1, Megabytes(1)));
+	
+	Str8 app_dir = os_linux_get_app_dir(&arena);
+	Str8 dll_rel_path = str8_lit("libyk.so");
+	Str8 dll_path = str8_join(&arena, app_dir, dll_rel_path);
+	void *handle = dlopen((char *)dll_path.c, RTLD_LAZY);
+	
 	termios start;
 	tcgetattr(STDIN_FILENO, &start);
 	
-	enable_raw_mode();
-	submit_clear_screen();
+	MK_Platform pf;
+	pf.mem_size = Megabytes(10);
+	pf.memory = calloc(1, pf.mem_size);
+	pf.argc = argc;
+	pf.argv = argv;
+	pf.app_dir = app_dir;
 	
-	void *handle = dlopen("./out/libyk.so", RTLD_LAZY);
+	
 	if(!handle)
 	{
 		printf("dll not found\n\r");
 	}
+	
 	update_and_render_fn update_and_render = (update_and_render_fn)dlsym(handle, "update_and_render");
 	
 	if(!update_and_render)
@@ -39,10 +36,10 @@ int main()
 		printf("fn not found\n\r");
 	}
 	
-	printf("%p\n\r", update_and_render);
-	MK_Platform pf;
-	pf.mem_size = Megabytes(10);
-	pf.memory = calloc(1, pf.mem_size);
+	printf("Do not enter is written on the doorway.\n");
+	printf("Why can't everyone just go away.\n");
+	
+	enable_raw_mode();
 	
 	char c;
 	while(read(STDIN_FILENO, &c, 1) == 1)
