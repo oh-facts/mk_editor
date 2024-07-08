@@ -1,5 +1,6 @@
 /* date = May 1st 2024 2:40 pm */
 #include "mk_editor.h"
+#include "mk_buffer.h"
 
 enum FILE_TYPE
 {
@@ -46,15 +47,6 @@ u8 *read_file(Arena *arena, const char *filepath, FILE_TYPE type)
   fclose(file);
 	
   return buffer;
-}
-
-v2i mk_get_cursor_pos()
-{
-	v2i out = {};
-	printf("\033[6n");
-	scanf("\033[%d;%dR", &out.x, &out.y);
-	
-	return out;
 }
 
 struct MK_Line
