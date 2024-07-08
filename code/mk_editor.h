@@ -58,7 +58,6 @@ MK_KEY mk_key_from_char(char c)
 		char seq[3];
 		read(STDIN_FILENO, &seq, 3);
 		
-		
 		if(seq[2] == '~')
 		{
 			switch(seq[1])
@@ -112,6 +111,14 @@ MK_KEY mk_key_from_char(char c)
 				case '~':
 				{
 					out = MK_KEY_DEL;
+				}break;
+				case 'H':
+				{
+					out = MK_KEY_HOME;
+				}break;
+				case 'F':
+				{
+					out = MK_KEY_END;
 				}break;
 			}
 		}

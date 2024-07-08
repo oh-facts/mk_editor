@@ -264,6 +264,18 @@ void update_and_render(MK_Platform *pf, char c)
 				}
 				
 			}break;
+			case MK_KEY_HOME:
+			{
+				editor->pos.y = 1;
+				start = 1;
+			}break;
+			
+			case MK_KEY_END:
+			{
+				editor->pos.y = editor->size.y - 1;
+				start = editor->file.num_lines - editor->size.y + 2;
+			}break;
+			
 			default:
 			{
 				
