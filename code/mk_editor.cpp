@@ -146,6 +146,7 @@ void update_and_render(MK_Platform *pf, char c)
 			}
 			
 		}
+		editor->size = get_win_size();
 		
 	}
 	
@@ -154,11 +155,9 @@ void update_and_render(MK_Platform *pf, char c)
 	MK_Buffer buf = {};
 	buf.base = push_array(trans, char, Megabytes(1));
 	
-	mk_buffer_push_clear_screen(&buf);
+	//mk_buffer_push_clear_screen(&buf);
 	mk_buffer_push_hide_cursor(&buf);
 	mk_buffer_push_reset_cursor(&buf);
-	
-	editor->size = get_win_size();
 	
 	local_persist b32 insert = 0;
 	if(c == CTRL_KEY('I'))
@@ -285,13 +284,9 @@ void update_and_render(MK_Platform *pf, char c)
 	
 	i32 end = start + editor->size.y;
 	
-	if(end > editor->file.num_lines)
-	{
-		end = editor->file.num_lines;
-	}
 	//printf("%d %d\r\n", start, end);
 	//INVALID_CODE_PATH();
-	for(i32 i = start; i < end; i ++)
+	for(i32 i = start; i < end - 1; i ++)
 	{
 		mk_buffer_push(&buf, (char*)editor->file.lines[i].data, editor->file.lines[i].num_col);
 	}
@@ -308,11 +303,11 @@ void update_and_render(MK_Platform *pf, char c)
 																 MK_VERSION_MAJOR,
 																 MK_VERSION_MINOR,
 																 MK_VERSION_PATCH);
-		
-		for(i32 i = 0; i < editor->size.x - 1 - editor_msg.len; i ++)
+		for(i32 i = 0; i < editor->size.x - 10 - editor_msg.len; i ++)
 		{
 			mk_buffer_push(&buf, " ", 1);
 		}
+		
 		mk_buffer_push(&buf, (char*)editor_msg.c, editor_msg.len);
 		
 	}

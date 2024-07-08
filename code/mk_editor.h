@@ -180,6 +180,7 @@ internal void mk_buffer_push(MK_Buffer *buffer, char *c, int len)
 {
 	u32 bytes_used = 0;
 	u32 line_len = 0;
+	
 	for(u32 i = 0; i < len; i ++)
 	{
 		if(line_len > LINE_MAX_LEN)
@@ -206,6 +207,7 @@ internal void mk_buffer_push(MK_Buffer *buffer, char *c, int len)
 			}
 			else if(c[i] == '\n')
 			{
+				mk_buffer_push(buffer, "\x1b[K",3);
 				buffer->base[buffer->used + bytes_used] = '\r';
 				bytes_used++;
 				buffer->base[buffer->used + bytes_used] = '\n';
@@ -222,7 +224,11 @@ internal void mk_buffer_push(MK_Buffer *buffer, char *c, int len)
 		
 	}
 	
-	buffer->used += bytes_used++;
+	buffer->base[buffer->used + bytes_used++] = '\x1b';
+	buffer->base[buffer->used + bytes_used++] = '[';
+	buffer->base[buffer->used + bytes_used++] = 'K';
+	
+	buffer->used += bytes_used;
 }
 
 internal void mk_buffer_pushf(MK_Buffer *buffer, const char *fmt, ...)
