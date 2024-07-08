@@ -139,7 +139,6 @@ void update_and_render(MK_Platform *pf, char c)
 			
 		}
 		editor->size = get_win_size();
-		
 	}
 	
 	Arena_temp temp = arena_temp_begin(trans);
@@ -275,7 +274,7 @@ void update_and_render(MK_Platform *pf, char c)
 	}
 	
 	i32 end = start + editor->size.y - 1;
-	
+	mk_buffer_push_set_cursor(&buf, (v2i){{1, 1}});
 	for(i32 i = start; i < end; i ++)
 	{
 		mk_buffer_push_row(&buf, (char*)editor->file.lines[i].data, editor->file.lines[i].num_col);
@@ -296,6 +295,7 @@ void update_and_render(MK_Platform *pf, char c)
 																 MK_VERSION_MAJOR,
 																 MK_VERSION_MINOR,
 																 MK_VERSION_PATCH);
+		
 		for(i32 i = 0; i < editor->size.x - 10 - editor_msg.len; i ++)
 		{
 			mk_buffer_push(&buf, " ", 1);

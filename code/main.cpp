@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 		if(c == CTRL_KEY('R'))
 		{
 			dlclose(handle);
-			handle = dlopen("./out/libyk.so", RTLD_LAZY);
+			handle = dlopen((char*)dll_path.c, RTLD_LAZY);
 			update_and_render = (update_and_render_fn)dlsym(handle, "update_and_render");
 		}
 		update_and_render(&pf, c);

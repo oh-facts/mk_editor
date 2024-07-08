@@ -7,7 +7,6 @@ struct MK_Window
 {
 	v2i size;
 	v2i pos;
-	u8 *cells;
 };
 
 #endif //MK_WINDOW_H
