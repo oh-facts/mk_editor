@@ -199,9 +199,7 @@ void update_and_render(MK_Platform *pf, char c)
 					if(start + editor->size.y < editor->file.num_lines + 2)
 					{
 						start++;
-						
 					}
-					
 				}
 				
 			}break;
@@ -233,7 +231,6 @@ void update_and_render(MK_Platform *pf, char c)
 				}
 				else
 				{
-					
 					start += editor->size.y;
 					
 					if(start + editor->pos.y > editor->file.num_lines - 1)
@@ -260,9 +257,9 @@ void update_and_render(MK_Platform *pf, char c)
 				{
 					start -= editor->size.y;
 					
-					if(start < 0)
+					if(start <= 1)
 					{
-						start += editor->size.y;
+						start = 1;
 					}
 				}
 				
