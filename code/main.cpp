@@ -1,4 +1,4 @@
-#include "mk_editor.h"
+#include "mk_platform.h"
 
 #include "stdlib.h"
 #include <dlfcn.h>

@@ -3,10 +3,5 @@
 #ifndef MK_WINDOW_H
 #define MK_WINDOW_H
 
-struct MK_Window
-{
-	v2i size;
-	v2i pos;
-};
 
 #endif //MK_WINDOW_H
