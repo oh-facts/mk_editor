@@ -282,21 +282,22 @@ void update_and_render(MK_Platform *pf, char c)
 		}
 	}
 	
-	i32 end = start + editor->size.y;
+	i32 end = start + editor->size.y - 1;
 	
-	//printf("%d %d\r\n", start, end);
-	//INVALID_CODE_PATH();
-	for(i32 i = start; i < end - 1; i ++)
+	for(i32 i = start; i < end; i ++)
 	{
-		mk_buffer_push(&buf, (char*)editor->file.lines[i].data, editor->file.lines[i].num_col);
+		mk_buffer_push_row(&buf, (char*)editor->file.lines[i].data, editor->file.lines[i].num_col);
 	}
 	
 	mk_buffer_pushf(&buf,"\x1b[%d;%dH", editor->size.y, 1);
 	
 	// rows
 	{
-		Str8 editor_msg = push_str8f(trans, "%s row:%d col:%d loc:%d mk editor v%d.%d.%d",
+		Str8 editor_msg = push_str8f(trans, "%s s:%d e:%d p:%d row:%d col:%d loc:%d mk editor v%d.%d.%d",
 																 editor->file.name.c,
+																 start,
+																 end,
+																 editor->pos.y,
 																 editor->pos.y + start,
 																 editor->pos.x,
 																 editor->file.num_lines + 1,

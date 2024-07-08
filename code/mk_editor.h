@@ -224,11 +224,13 @@ internal void mk_buffer_push(MK_Buffer *buffer, char *c, int len)
 		
 	}
 	
-	buffer->base[buffer->used + bytes_used++] = '\x1b';
-	buffer->base[buffer->used + bytes_used++] = '[';
-	buffer->base[buffer->used + bytes_used++] = 'K';
-	
 	buffer->used += bytes_used;
+}
+
+internal void mk_buffer_push_row(MK_Buffer *buffer, char *c, int len)
+{
+	mk_buffer_push(buffer, c, len);
+	mk_buffer_push(buffer, "\x1b[K", 3);
 }
 
 internal void mk_buffer_pushf(MK_Buffer *buffer, const char *fmt, ...)
