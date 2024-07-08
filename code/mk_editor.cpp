@@ -257,9 +257,9 @@ void update_and_render(MK_Platform *pf, char c)
 				{
 					start -= editor->size.y;
 					
-					if(start <= 1)
+					if(start < 1)
 					{
-						start = 1;
+						start = 0;
 					}
 				}
 				
@@ -267,7 +267,7 @@ void update_and_render(MK_Platform *pf, char c)
 			case MK_KEY_HOME:
 			{
 				editor->pos.y = 1;
-				start = 1;
+				start = 0;
 			}break;
 			
 			case MK_KEY_END:
@@ -300,10 +300,11 @@ void update_and_render(MK_Platform *pf, char c)
 	
 	// rows
 	{
-		Str8 editor_msg = push_str8f(trans, "%s row:%d col: %d mk editor v%d.%d.%d",
+		Str8 editor_msg = push_str8f(trans, "%s row:%d col:%d loc:%d mk editor v%d.%d.%d",
 																 editor->file.name.c,
 																 editor->pos.y + start,
 																 editor->pos.x,
+																 editor->file.num_lines + 1,
 																 MK_VERSION_MAJOR,
 																 MK_VERSION_MINOR,
 																 MK_VERSION_PATCH);

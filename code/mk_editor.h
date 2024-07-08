@@ -174,13 +174,15 @@ internal Arena *tcxt_get_scratch(Arena **conflicts, u64 count)
 #define scratch_begin(conflicts, count) arena_temp_begin(tcxt_get_scratch(conflicts, count))
 #define scratch_end(scratch) arena_temp_end(scratch);
 
+#define LINE_MAX_LEN (200)
+
 internal void mk_buffer_push(MK_Buffer *buffer, char *c, int len)
 {
 	u32 bytes_used = 0;
 	u32 line_len = 0;
 	for(u32 i = 0; i < len; i ++)
 	{
-		if(line_len > 80)
+		if(line_len > LINE_MAX_LEN)
 		{
 			buffer->base[buffer->used + bytes_used] = '\r';
 			bytes_used++;
