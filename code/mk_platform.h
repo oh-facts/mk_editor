@@ -3,6 +3,10 @@
 #ifndef MK_PLATFORM_H
 #define MK_PLATFORM_H
 
+#define MK_VERSION_MAJOR (0)
+#define MK_VERSION_MINOR (0)
+#define MK_VERSION_PATCH (1)
+
 #include "stdio.h"
 
 #include "base_core.h"
@@ -13,14 +17,12 @@
 #include "base_string.h"
 #include "base_string.cpp"
 
-#include "base_math.h"
-#include "base_math.cpp"
-
 #include <termios.h>
 
 #include <unistd.h>
 #include <ctype.h>
 #include <sys/ioctl.h>
+#include <stdlib.h>
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
@@ -132,5 +134,50 @@ struct MK_Platform
 
 typedef void (*update_and_render_fn)(MK_Platform *, char);
 
+enum FILE_TYPE
+{
+  FILE_TYPE_TEXT,
+  FILE_TYPE_BINARY,
+  FILE_TYPE_COUNT
+};
+
+#if defined(OS_WIN32)
+#define _file_open(file, filepath, mode) fopen_s(file, filepath, mode)
+#elif defined (OS_LINUX)
+#define _file_open(file, filepath, mode) *file = fopen(filepath, mode)
+#endif
+
+u8 *read_file(Arena *arena, const char *filepath, FILE_TYPE type)
+{
+  FILE *file;
+  
+  local_persist char *file_type_table[FILE_TYPE_COUNT] = 
+  {
+    "r",
+    "rb"
+  };
+  
+  _file_open(&file, filepath, file_type_table[type]);
+  
+  if(!file)
+  {
+    printf("file %s not found\n", filepath);
+    INVALID_CODE_PATH();
+  }
+  
+  fseek(file, 0, SEEK_END);
+  
+  i32 len = ftell(file);
+  //print("%d", len);
+  
+  fseek(file, 0, SEEK_SET);
+  
+  u8 *buffer = push_array(arena, u8, len);
+  fread(buffer, sizeof(u8), len, file);
+  
+  fclose(file);
+  
+  return buffer;
+}
 
 #endif //MK_PLATFORM_H

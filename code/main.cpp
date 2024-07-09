@@ -1,11 +1,9 @@
 #include "mk_platform.h"
 
-#include "stdlib.h"
 #include <dlfcn.h>
 
 int main(int argc, char **argv)
 {
-	
 	submit_clear_screen();
 	submit_reset_cursor();
 	
