@@ -156,7 +156,7 @@ internal MK_Word_node *mk_word_push(Arena *arena, MK_Word_row *row)
 	{
 		row->last = row->first = out;
 	}
-	
+	row->count++;
 	return out;
 }
 
@@ -221,7 +221,7 @@ internal MK_Buffer mk_buffer_from_file(Arena *arena, u8 *file)
 		{
 			num_col++;
 		}
-		
+		c++;
 	}
 	
 	return out;
@@ -230,35 +230,77 @@ internal MK_Buffer mk_buffer_from_file(Arena *arena, u8 *file)
 internal MK_Word_row_list mk_word_list_from_buffer(Arena *arena, MK_Buffer *buf)
 {
 	MK_Word_row_list w_row_list = {};
-	w_row_list.rows =push_array(arena, MK_Word_row, buf->num_rows);
+	w_row_list.rows = push_array(arena, MK_Word_row, buf->num_rows);
 	
 	for(i32 i = 0; i < buf->num_rows; i ++)
 	{
 		MK_Row *row = buf->rows + i;
-		printf("%d \r\n",i);
 		
 		char text_buf[1024];
 		u32 text_len = 0;
 		for(i32 j = 0; j < row->col; j++)
 		{
 			char c = row->c[j];
+			//printf("%c", c);
 			
 			
 			if(c == ' ')
 			{
-				MK_Word_node *node = mk_word_push(arena, w_row_list.rows);
-				w_row_list.num_rows++;
-				
+				//printf("");
+				MK_Word_node *node = mk_word_push(arena, &w_row_list.rows[i]);
+				node->w.str.c = push_array(arena, u8, text_len);
 				mem_cpy(node->w.str.c, text_buf, text_len);
 				node->w.str.len = text_len;
+				
 				text_len = 0;
+				
+				for(i32 k = 0; k < node->w.str.len; k ++)
+				{
+					//printf("%c", node->w.str.c[k]);
+				}
+				//printf(" ");
+				//printf("gi\r\n");
 			}
 			else
 			{
 				text_buf[text_len++] = c;
 			}
 		}
+		
+		MK_Word_node *node = mk_word_push(arena, &w_row_list.rows[i]);
+		
+		node->w.str.c = push_array(arena, u8, text_len);
+		mem_cpy(node->w.str.c, text_buf, text_len);
+		node->w.str.len = text_len;
+		
+		w_row_list.num_rows++;
+		
+		for(i32 k = 0; k < node->w.str.len; k ++)
+		{
+			//printf("%c", node->w.str.c[k]);
+		}
+		
+		//printf("\r\n");
 	}
+	
+	for(i32 i = 0; i < w_row_list.num_rows; i ++)
+	{
+		MK_Word_row *row = w_row_list.rows + i;
+		MK_Word_node *cur = row->first;
+		while(cur)
+		{
+			for(i32 j = 0; j < cur->w.str.len; j ++)
+			{
+				printf("%c", cur->w.str.c[j]);
+			}
+			printf(" ");
+			cur = cur->next;
+		}
+		
+		printf("\r\n");
+	}
+	
+	INVALID_CODE_PATH();
 	return w_row_list;
 }
 

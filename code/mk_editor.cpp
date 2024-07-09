@@ -40,7 +40,7 @@ void update_and_render(MK_Platform *pf, char c)
 			
 			editor->buf = mk_buffer_from_file(arena, file);
 			
-			//editor->window.w_row_list = mk_word_list_from_buffer(arena, &editor->buf);
+			editor->window.w_row_list = mk_word_list_from_buffer(arena, &editor->buf);
 			
 		}
 		
