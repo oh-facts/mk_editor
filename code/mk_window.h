@@ -19,7 +19,8 @@ enum MK_KEY
 	MK_KEY_PAGE_DOWN,
 	
 	MK_KEY_DEL,
-	
+	MK_KEY_BACK_SPACE,
+	MK_KEY_ENTER,
 	MK_KEY_COUNT
 };
 
@@ -42,6 +43,10 @@ internal MK_KEY mk_key_from_char(char c)
 				case '4':
 				{
 					out = MK_KEY_END;
+				}break;
+				case '3':
+				{
+					out = MK_KEY_DEL;
 				}break;
 				case '5':
 				{
@@ -81,10 +86,6 @@ internal MK_KEY mk_key_from_char(char c)
 				{
 					out = MK_KEY_LEFT;
 				}break;
-				case '~':
-				{
-					out = MK_KEY_DEL;
-				}break;
 				case 'H':
 				{
 					out = MK_KEY_HOME;
@@ -95,6 +96,15 @@ internal MK_KEY mk_key_from_char(char c)
 				}break;
 			}
 		}
+	}
+	
+	if(c == 127)
+	{
+		out = MK_KEY_BACK_SPACE;
+	}
+	else if(c == 13)
+	{
+		out = MK_KEY_ENTER;
 	}
 	
 	return out;
@@ -108,7 +118,7 @@ struct MK_Cursor
 
 struct MK_Word
 {
-	Str8 str;
+	char c;
 	b32 is_tab;
 	b32 is_space;
 };
@@ -135,6 +145,8 @@ struct MK_Word_row_list
 	i32 num_rows;
 };
 
+
+
 internal MK_Word_node *mk_word_push(Arena *arena, MK_Word_row *row)
 {
 	MK_Word_node *out = push_struct(arena, MK_Word_node);
@@ -153,61 +165,60 @@ internal MK_Word_node *mk_word_push(Arena *arena, MK_Word_row *row)
 
 internal MK_Word_node *mk_word_insert(Arena *arena, MK_Word_row *row, i32 index)
 {
-	i32 i = 0;
-	MK_Word_node *cur = row->first;
-	MK_Word_node *prev = 0;
+	MK_Word_node *at = row->first;
 	
-	while(1)
+	if(index == 0)
 	{
-		if(i + cur->w.str.len >= index)
+		MK_Word_node *out = push_struct(arena, MK_Word_node);
+		out->next = row->first;
+		row->first = out;
+		return out;
+	}
+	
+	for(i32 i = 0; i < index - 1; i ++)
+	{
+		if(at == NULL || at->next == NULL)
 		{
-			break;
+			printf("not possible dont\r\n");
+			INVALID_CODE_PATH();
 		}
-		else
-		{
-			i += cur->w.str.len;
-		}
-		
-		prev = cur;
-		
-		cur = cur->next;
+		at = at->next;
 	}
 	
-	i32 char_index = index - i;
+	MK_Word_node *out = push_struct(arena, MK_Word_node);
+	out->next = at->next;
+	at->next = out;
 	
-	MK_Word_node *a = push_struct(arena, MK_Word_node);
-	MK_Word_node *b = push_struct(arena, MK_Word_node);
-	MK_Word_node *c = push_struct(arena, MK_Word_node);
-	
-	a->next = push_struct(arena, MK_Word_node);
-	b->next = push_struct(arena, MK_Word_node);
-	c->next = push_struct(arena, MK_Word_node);
-	
-	if(!prev)
-	{
-		row->first = a;
-	}
-	else
-	{
-		prev->next = a;
-	}
-	
-	a->next = b;
-	b->next = c;
-	c->next = cur->next;
-	
-	a->w.str.c = cur->w.str.c;
-	a->w.str.len = char_index;
-	
-	c->w.str.c = cur->w.str.c + char_index;
-	c->w.str.len = cur->w.str.len - char_index;
-	
-	return b;
+	return out;
 }
 
-internal MK_Word_node *mk_char_remove(Arena *arena, MK_Word_row *row, i32 index)
+internal void mk_word_remove(Arena *arena, MK_Word_row *row, i32 index)
 {
-	return 0;
+	
+	if (index == 0)
+	{
+		//MK_Word_node *rem = row->first;
+		row->first = row->first->next;
+		
+		return;
+	}
+	
+	MK_Word_node *at = row->first;
+	
+	for(i32 i = 0; i < index - 1; i ++)
+	{
+		if(at == NULL || at->next == NULL)
+		{
+			printf("%s %d\r\n", __FILE__, __LINE__);
+			INVALID_CODE_PATH();
+			return;
+		}
+		at = at->next;
+	}
+	
+	//MK_Word_node *rem = at->next;
+	at->next = at->next->next;
+	
 }
 
 struct MK_Window
@@ -272,22 +283,10 @@ internal MK_Word_row_list mk_word_list_from_buffer(Arena *arena, u8 *file)
 		}
 		else
 		{
-			char text_buf[1024];
-			u32 text_len = 0;
-			
-			while(*c != ' ' && *c != '\r' && *c != '\n' && *c != '\t' && *c != '\0')
-			{
-				text_buf[text_len++] = *c;
-				printf("%c\r\n",*c);
-				c++;
-			}
-			
-			row->num_col += text_len;
+			row->num_col ++;
 			MK_Word_node *node = mk_word_push(arena, row);
-			node->w.str.c = push_array(arena, u8, text_len);
-			
-			mem_cpy(node->w.str.c, text_buf, text_len);
-			node->w.str.len = text_len;
+			node->w.c = *c;
+			c++;
 		}
 		
 	}
@@ -374,7 +373,7 @@ internal void mk_window_render(MK_Window *win)
 			}
 			else
 			{
-				w_buffer_push(&win->wbuf, (char*)cur->w.str.c, cur->w.str.len);
+				w_buffer_push(&win->wbuf, &cur->w.c, 1);
 			}
 			cur = cur->next;
 		}
@@ -448,6 +447,10 @@ internal void mk_cursor_mv(MK_Window *win, char c)
 				curs->row --;
 			}
 		}break;
+		case MK_KEY_ENTER:
+		{
+			
+		}break;
 		case MK_KEY_DOWN:
 		{
 			curs->row ++;
@@ -466,7 +469,10 @@ internal void mk_cursor_mv(MK_Window *win, char c)
 			{
 				curs->col ++;
 			}
-			
+			else
+			{
+				curs->row++;
+			}
 		}break;
 		case MK_KEY_HOME:
 		case MK_KEY_END:
@@ -476,8 +482,19 @@ internal void mk_cursor_mv(MK_Window *win, char c)
 			
 		}break;
 		case MK_KEY_DEL:
+		{if(wrow->num_col > 0 && curs->col < wrow->num_col)
+			{
+				mk_word_remove(win->arena, wrow, curs->col);
+				wrow->num_col--;
+			}
+		}break;
+		case MK_KEY_BACK_SPACE:
 		{
-			
+			if(wrow->num_col > 0 && curs->col > 0)
+			{
+				mk_word_remove(win->arena, wrow, --curs->col);
+				wrow->num_col--;
+			}
 		}break;
 		default:
 		{
@@ -488,16 +505,22 @@ internal void mk_cursor_mv(MK_Window *win, char c)
 				break;
 			}
 			
-			MK_Word_node *node = mk_word_insert(win->arena, wrow, curs->col++ - 1);
-			node->w.str.c = push_struct(win->arena, u8);
-			node->w.str.c[0] = c;
-			node->w.str.len = 1;
+			MK_Word_node *node = mk_word_insert(win->arena, wrow, curs->col++);
+			node->w.c = c;
+			wrow->num_col++;
 			
-			//printf("%c\r\n", *node->w.str.c);
 		}break;
 	}
 	
 	wrow = mk_cursor_get_word_row(win);
+	
+	// snapping
+	{
+		if(curs->col > wrow->num_col)
+		{
+			curs->col = wrow->num_col;
+		}
+	}
 	
 }
 
