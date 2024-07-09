@@ -134,10 +134,31 @@ struct MK_Word_row
 {
 	MK_Word_node *first;
 	MK_Word_node *last;
+	
 	i32 count;
 };
 
+struct MK_Word_row_list
+{
+	MK_Word_row *rows;
+	i32 num_rows;
+};
 
+internal MK_Word_node *mk_word_push(Arena *arena, MK_Word_row *row)
+{
+	MK_Word_node *out = push_struct(arena, MK_Word_node);
+	
+	if(row->last)
+	{
+		row->last = row->last->next = out;
+	}
+	else
+	{
+		row->last = row->first = out;
+	}
+	
+	return out;
+}
 
 struct MK_Window
 {
@@ -147,7 +168,8 @@ struct MK_Window
 	MK_Cursor cursor;
 	W_Buffer wbuf;
 	MK_Buffer *buf;
-	MK_Buffer *ren_buf;
+	
+	MK_Word_row_list w_row_list;
 	
 	Str8 status_msg;
 };
@@ -175,6 +197,7 @@ internal MK_Buffer mk_buffer_from_file(Arena *arena, u8 *file)
 	
 	while(1)
 	{
+		
 		if(*c == '\r' || *c == '\n' || *c == '\0')
 		{
 			MK_Row *row = out.rows + out.num_rows++;
@@ -202,6 +225,41 @@ internal MK_Buffer mk_buffer_from_file(Arena *arena, u8 *file)
 	}
 	
 	return out;
+}
+
+internal MK_Word_row_list mk_word_list_from_buffer(Arena *arena, MK_Buffer *buf)
+{
+	MK_Word_row_list w_row_list = {};
+	w_row_list.rows =push_array(arena, MK_Word_row, buf->num_rows);
+	
+	for(i32 i = 0; i < buf->num_rows; i ++)
+	{
+		MK_Row *row = buf->rows + i;
+		printf("%d \r\n",i);
+		
+		char text_buf[1024];
+		u32 text_len = 0;
+		for(i32 j = 0; j < row->col; j++)
+		{
+			char c = row->c[j];
+			
+			
+			if(c == ' ')
+			{
+				MK_Word_node *node = mk_word_push(arena, w_row_list.rows);
+				w_row_list.num_rows++;
+				
+				mem_cpy(node->w.str.c, text_buf, text_len);
+				node->w.str.len = text_len;
+				text_len = 0;
+			}
+			else
+			{
+				text_buf[text_len++] = c;
+			}
+		}
+	}
+	return w_row_list;
 }
 
 internal void mk_window_render(MK_Window *win)
@@ -232,8 +290,6 @@ internal void mk_window_render(MK_Window *win)
 			w_buffer_push(&win->wbuf, &row->c[j], 1);
 		}
 		//w_buffer_push(&win->wbuf, row->c, row->col);
-		
-		
 		
 		w_buffer_push(&win->wbuf, "\x1b[K", 3);
 		
