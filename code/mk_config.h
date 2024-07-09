@@ -5,7 +5,7 @@
 
 global struct
 {
-	i32 tab_width = 4;
+	i32 tab_width = 2;
 } global_config;
 
 

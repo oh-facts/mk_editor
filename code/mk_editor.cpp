@@ -38,9 +38,7 @@ void update_and_render(MK_Platform *pf, char c)
 			
 			u8 *file = read_file(trans, (char*)abs_file_path.c, FILE_TYPE_BINARY);
 			
-			editor->buf = mk_buffer_from_file(arena, file);
-			
-			editor->window.w_row_list = mk_word_list_from_buffer(arena, &editor->buf);
+			editor->window.w_row_list = mk_word_list_from_buffer(arena, file);
 			
 		}
 		
@@ -48,8 +46,7 @@ void update_and_render(MK_Platform *pf, char c)
 	
 	MK_Window *win = &editor->window;
 	win->wbuf = w_buffer_alloc(trans, Megabytes(1));
-	
-	win->buf = &editor->buf;
+	win->arena = arena;
 	
 	mk_set_win_size(win);
 	

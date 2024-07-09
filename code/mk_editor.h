@@ -10,7 +10,6 @@ struct MK_Editor
 	b32 initialized;
 	
 	MK_Window window;
-	MK_Buffer buf;
 };
 
 #endif //MK_EDITOR_H
