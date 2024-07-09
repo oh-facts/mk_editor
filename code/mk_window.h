@@ -243,8 +243,13 @@ internal MK_Word_row_list mk_word_list_from_buffer(Arena *arena, MK_Buffer *buf)
 			char c = row->c[j];
 			//printf("%c", c);
 			
-			
-			if(c == ' ')
+			if(c == '\t')
+			{
+				MK_Word_node *node = mk_word_push(arena, &w_row_list.rows[i]);
+				node->w.is_tab = 1;
+				text_len = 0;
+			}
+			else if(c == ' ')
 			{
 				//printf("");
 				MK_Word_node *node = mk_word_push(arena, &w_row_list.rows[i]);
@@ -283,17 +288,26 @@ internal MK_Word_row_list mk_word_list_from_buffer(Arena *arena, MK_Buffer *buf)
 		//printf("\r\n");
 	}
 	
+#if 0
 	for(i32 i = 0; i < w_row_list.num_rows; i ++)
 	{
 		MK_Word_row *row = w_row_list.rows + i;
 		MK_Word_node *cur = row->first;
 		while(cur)
 		{
-			for(i32 j = 0; j < cur->w.str.len; j ++)
+			if(!cur->w.is_tab)
 			{
-				printf("%c", cur->w.str.c[j]);
+				for(i32 j = 0; j < cur->w.str.len; j ++)
+				{
+					printf("%c", cur->w.str.c[j]);
+				}
+				printf(" ");
 			}
-			printf(" ");
+			else
+			{
+				printf("  ");
+			}
+			
 			cur = cur->next;
 		}
 		
@@ -301,6 +315,7 @@ internal MK_Word_row_list mk_word_list_from_buffer(Arena *arena, MK_Buffer *buf)
 	}
 	
 	INVALID_CODE_PATH();
+#endif
 	return w_row_list;
 }
 
