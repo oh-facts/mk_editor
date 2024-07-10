@@ -160,7 +160,8 @@ void mk_cursor_mv(MK_Window *win, char c)
 			
 		}break;
 		case MK_KEY_DEL:
-		{if(wrow->num_col > 0 && curs->col < wrow->num_col)
+		{
+			if(wrow->num_col > 0 && curs->col < wrow->num_col)
 			{
 				mk_word_remove(win->arena, wrow, curs->col);
 				wrow->num_col--;
@@ -174,18 +175,25 @@ void mk_cursor_mv(MK_Window *win, char c)
 				wrow->num_col--;
 			}
 		}break;
+		
 		default:
 		{
-			if(!wrow)
+			if ((c >= 0 && c <= 31) || c == 127)
 			{
-				printf("ffff\r\n");
-				INVALID_CODE_PATH();
-				break;
 			}
-			
-			MK_Word_node *node = mk_word_insert(win->arena, wrow, curs->col++);
-			node->w.c = c;
-			wrow->num_col++;
+			else
+			{
+				if(!wrow)
+				{
+					printf("ffff\r\n");
+					INVALID_CODE_PATH();
+					break;
+				}
+				
+				MK_Word_node *node = mk_word_insert(win->arena, wrow, curs->col++);
+				node->w.c = c;
+				wrow->num_col++;
+			}
 			
 		}break;
 	}

@@ -8,17 +8,30 @@ if [ "$help" == "1" ]; then
     echo ""
     echo "valid args"
     echo "----------"
-    echo "mk: compile editor"
     echo "pf: compile platform"
+    echo "mk: compile editor"
     echo "clean: delete out/"
+    echo "debug: debug build/"
+    echo "release: release build/"
 fi
 
-common_flags="-std=c++17 -msse4.1 -O0 -fno-rtti -fno-exceptions -Wall -Wno-unused-function -Wno-writable-strings -Wno-comment -g"
+common_flags="-std=c++17 -msse4.1 -fno-rtti -fno-exceptions -Wall -Wno-unused-function -Wno-writable-strings -Wno-comment"
+
+debug_build="-O0"
+release_build="-O2"
+
+[ "$pf" != "1" ] && [ "$mk" != "1" ] && pf="1" && mk="1" 
+[ "$debug" == "1" ] && build_type="$debug_build" 
+[ "$release" == "1" ] && build_type="$release_build"
+[ "$release" != "1" ] && build_type="$debug_build"
 
 [ "$clean" == "1" ] && echo "deleted /out" && rm -rf "out/"
 
+[ "$build_type" == "$debug_build" ] && echo "[debug build]"
+[ "$build_type" == "$release_build" ] && echo "[release build]"
+
 [ ! -d "out" ] && mkdir "out"
 
-[ "$pf" == "1" ] && echo "compiled platform" && clang++ $common_flags code/main.cpp -o "out/yk"
+[ "$pf" == "1" ] && clang++ $common_flags $build_type code/main.cpp -o "out/yk" && echo "compiled platform"
 
-[ "$mk" == "1" ] && echo "compiled editor" && clang++ $common_flags -fPIC -shared code/mk_editor.cpp -o "out/libyk.so"
+[ "$mk" == "1" ] && clang++ $common_flags $build_type -fPIC -shared code/mk_editor.cpp -o "out/libyk.so" && echo "compiled editor"

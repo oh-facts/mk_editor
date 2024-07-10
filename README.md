@@ -6,8 +6,12 @@ First pass complete
 
 ## build
 Tested on wsl ubuntu.
+
+Following arguments can be passed
+`pf`, `mk`, `clean`, `debug`, `release`, `help`
+
 ```
-./build.sh pf mk
+./build.sh
 ```
 Binaries built in `out/`
 
