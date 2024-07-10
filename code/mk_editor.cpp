@@ -1,10 +1,17 @@
-/* date = May 1st 2024 2:40 pm */
-
 #include "mk_platform.h"
-#include "mk_config.h"
+
 #include "w_buffer.h"
+
+#include "mk_config.h"
+#include "mk_key.h"
+#include "mk_text_buffer.h"
 #include "mk_window.h"
 #include "mk_editor.h"
+
+#include "w_buffer.cpp"
+#include "mk_key.cpp"
+#include "mk_text_buffer.cpp"
+#include "mk_window.cpp"
 
 extern "C"
 {
@@ -40,6 +47,10 @@ void update_and_render(MK_Platform *pf, char c)
 			
 			editor->window.w_row_list = mk_word_list_from_buffer(arena, file);
 			
+		}
+		else
+		{
+			INVALID_CODE_PATH();
 		}
 		
 	}

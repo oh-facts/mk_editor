@@ -4,8 +4,8 @@
 #define MK_PLATFORM_H
 
 #define MK_VERSION_MAJOR (0)
-#define MK_VERSION_MINOR (0)
-#define MK_VERSION_PATCH (1)
+#define MK_VERSION_MINOR (1)
+#define MK_VERSION_PATCH (0)
 
 #include "stdio.h"
 
@@ -111,7 +111,6 @@ internal char *file_name_from_path(Arena *arena, Str8 path)
 		cur--;
 		count++;
 	}
-	
 	
 	char *file_name_cstr = push_array(arena, char, count + 1);
 	mem_cpy(file_name_cstr, cur + 1, count);

@@ -38,9 +38,9 @@ __builtin_trap();\
 
 #define AssertAlways(expr) _Assert_helper(expr)
 
-#define INVALID_CODE_PATH() { volatile int *ptr = 0; *ptr = 0; }
+#define INVALID_CODE_PATH() _Assert_helper(0)
 
-#define NOT_IMPLEMENTED() { volatile int *ptr = 0; *ptr = 0; }
+#define NOT_IMPLEMENTED() _Assert_helper(0)
 
 #define Kilobytes(Value) ((uint64_t)(Value) * 1024)
 #define Megabytes(Value) (Kilobytes(Value) * 1024)

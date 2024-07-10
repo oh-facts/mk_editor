@@ -1,6 +1,6 @@
 # MK Text Editor
 
-Nameless Terminal Text Editor v0.0.1
+Nameless Terminal Text Editor v0.1.0
 
 First pass complete
 
