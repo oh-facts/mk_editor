@@ -65,8 +65,7 @@ void update_and_render(MK_Platform *pf, char c)
 	
 	mk_window_begin_render(win);
 	
-	win->status_msg = push_str8f(trans, "row:%d col:%d mk editor v%d.%d.%d",
-															 win->cursor.row + 1, win->cursor.col + 1, MK_VERSION_MAJOR, MK_VERSION_MINOR ,MK_VERSION_PATCH);
+	win->status_msg = push_str8f(trans, "row:%d col:%d mk editor v%d.%d.%d",win->cursor.row + 1, win->cursor.col + 1, MK_VERSION_MAJOR, MK_VERSION_MINOR ,MK_VERSION_PATCH);
 	
 	mk_window_render(win);
 	
