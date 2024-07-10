@@ -17,6 +17,7 @@ int main(int argc, char **argv)
 	
 	termios start;
 	tcgetattr(STDIN_FILENO, &start);
+	enable_raw_mode();
 	
 	MK_Platform pf;
 	pf.mem_size = Megabytes(20);
@@ -37,22 +38,20 @@ int main(int argc, char **argv)
 		printf("fn not found\n\r");
 	}
 	
-	printf("Do not enter is written on the doorway.\n");
-	printf("Why can't everyone just go away.\n");
+	printf("Do not enter is written on the doorway.\r\n");
+	printf("Why can't everyone just go away.\r\n");
 	
-	printf("\n\n");
+	printf("\r\n\r\n");
 	
-	printf("Welcome to the mk editor dev build\n");
+	printf("Welcome to the mk editor dev build\r\n");
 	
-	printf("ctrl + q to quit\n");
-	printf("ctrl + r to hot reload\n");
-	printf("ctrl + i to toggle between insert and normal\n");
+	printf("ctrl + q to quit\r\n");
+	printf("ctrl + r to hot reload\r\n");
 	
-	printf("\n\n");
+	printf("\r\n\r\n");
 	
-	printf("press any key to continue\n");
+	printf("press any key to continue\r\n");
 	
-	enable_raw_mode();
 	char c = '\0';
 	read(STDIN_FILENO, &c, 1);
 	
