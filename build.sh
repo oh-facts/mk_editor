@@ -17,7 +17,7 @@ fi
 
 common_flags="-std=c++17 -msse4.1 -fno-rtti -fno-exceptions -Wall -Wno-unused-function -Wno-writable-strings -Wno-comment"
 
-debug_build="-O0"
+debug_build="-O0 -g"
 release_build="-O2"
 
 [ "$pf" != "1" ] && [ "$mk" != "1" ] && pf="1" && mk="1" 

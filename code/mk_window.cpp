@@ -34,10 +34,13 @@ void mk_window_render(MK_Window *win)
 		
 	}
 #else
+	i32 i = 0;
 	
-	for(i32 i = 0; i < win->row; i ++)
+	MK_Word_row_node *row_node = mk_get_word_row(&win->w_row_list, win->scroll_row);
+	
+	while(row_node && i < win->row)
 	{
-		MK_Word_row *row = win->w_row_list.rows + i + win->scroll_row;
+		MK_Word_row *row = &row_node->row;
 		MK_Word_node *cur = row->first;
 		while(cur)
 		{
@@ -61,11 +64,15 @@ void mk_window_render(MK_Window *win)
 		{
 			w_buffer_push(&win->wbuf, "\r\n", 2);
 		}
-		
-		//mk_window_submit(win);
-		//INVALID_CODE_PATH();
-		//printf("\r\n");
+		i++;
+		row_node = row_node->next;
 	}
+	
+	
+	//mk_window_submit(win);
+	//INVALID_CODE_PATH();
+	//printf("\r\n");
+	
 #endif
 	
 	w_buffer_push_cursor_pos(&win->wbuf, win->col - win->status_msg.len, win->row - 1);
@@ -104,18 +111,13 @@ void mk_window_end_render(MK_Window *win)
 	w_buffer_push_show_cursor(&win->wbuf);
 }
 
-MK_Word_row *mk_cursor_get_word_row(MK_Window *win)
-{
-	return win->w_row_list.rows + win->cursor.row;
-}
-
 void mk_cursor_mv(MK_Window *win, char c)
 {
 	MK_KEY key = mk_key_from_char(c);
 	MK_Cursor *curs = &win->cursor;
 	
-	MK_Word_row *wrow = mk_cursor_get_word_row(win);
-	
+	MK_Word_row_node *wrow_node = mk_get_word_row(&win->w_row_list, win->cursor.row);
+	MK_Word_row *wrow = &wrow_node->row;
 	switch(key)
 	{
 		case MK_KEY_UP:
@@ -127,8 +129,44 @@ void mk_cursor_mv(MK_Window *win, char c)
 		}break;
 		case MK_KEY_ENTER:
 		{
-			
+			if(curs->col == 0)
+			{
+        mk_word_row_insert(win->arena, &win->w_row_list, win->cursor.row);
+			}
+			else
+			{
+        MK_Word_row_node *new_row_node = mk_word_row_insert(win->arena, &win->w_row_list, win->cursor.row + 1);
+        MK_Word_row *new_row = &new_row_node->row;
+				
+        MK_Word_node *word_node = wrow->first;
+				
+        for(i32 i = 0; i < curs->col - 1; i++)
+        {
+					word_node = word_node->next;
+        }
+				
+        MK_Word_node *end_nodes = word_node->next;
+        MK_Word_node *last_end_node = wrow->last;
+				
+        word_node->next = nullptr;
+        wrow->last = word_node;
+				
+        i32 new_row_col_count = 0;
+        for (MK_Word_node *count_node = end_nodes; count_node != 0; count_node = count_node->next)
+        {
+					new_row_col_count++;
+        }
+				
+        wrow->num_col = curs->col;
+        
+        new_row->first = end_nodes;
+        new_row->last = last_end_node;
+        new_row->num_col = new_row_col_count;
+        //new_row->num_tab = 0;
+			}
+			curs->row++;
 		}break;
+		
 		case MK_KEY_DOWN:
 		{
 			curs->row ++;
@@ -153,7 +191,13 @@ void mk_cursor_mv(MK_Window *win, char c)
 			}
 		}break;
 		case MK_KEY_HOME:
+		{
+			curs->row = 0;
+		}break;
 		case MK_KEY_END:
+		{
+			curs->row = win->w_row_list.count - 1;
+		}break;
 		case MK_KEY_PAGE_UP:
 		case MK_KEY_PAGE_DOWN:
 		{
@@ -173,6 +217,11 @@ void mk_cursor_mv(MK_Window *win, char c)
 			{
 				mk_word_remove(win->arena, wrow, --curs->col);
 				wrow->num_col--;
+			}
+			
+			if(curs->col == 0)
+			{
+				mk_word_row_remove(win->arena, &win->w_row_list, curs->row);
 			}
 		}break;
 		
@@ -198,7 +247,16 @@ void mk_cursor_mv(MK_Window *win, char c)
 		}break;
 	}
 	
-	wrow = mk_cursor_get_word_row(win);
+	// bounds
+	{
+		if(curs->row > win->w_row_list.count - 1)
+		{
+			curs->row = win->w_row_list.count - 1 ;
+		}
+	}
+	
+	wrow_node = mk_get_word_row(&win->w_row_list, win->cursor.row);
+	wrow = &wrow_node->row;
 	
 	// snapping
 	{
@@ -207,5 +265,6 @@ void mk_cursor_mv(MK_Window *win, char c)
 			curs->col = wrow->num_col;
 		}
 	}
+	
 	
 }

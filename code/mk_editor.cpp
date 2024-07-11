@@ -46,7 +46,7 @@ void update_and_render(MK_Platform *pf, char c)
 			u8 *file = read_file(trans, (char*)abs_file_path.c, FILE_TYPE_BINARY);
 			
 			editor->window.w_row_list = mk_word_list_from_buffer(arena, file);
-			
+			//editor->window.scroll_row_node = editor->window.w_row_list.first;
 		}
 		else
 		{
@@ -65,7 +65,7 @@ void update_and_render(MK_Platform *pf, char c)
 	
 	mk_window_begin_render(win);
 	
-	win->status_msg = push_str8f(trans, "row:%d col:%d mk editor v%d.%d.%d",win->cursor.row + 1, win->cursor.col + 1, MK_VERSION_MAJOR, MK_VERSION_MINOR ,MK_VERSION_PATCH);
+	win->status_msg = push_str8f(trans, "row:%d col:%d scroll:%d mk editor v%d.%d.%d",win->cursor.row + 1, win->cursor.col + 1, win->scroll_row, MK_VERSION_MAJOR, MK_VERSION_MINOR ,MK_VERSION_PATCH);
 	
 	mk_window_render(win);
 	
