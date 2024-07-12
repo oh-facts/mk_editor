@@ -20,33 +20,38 @@ extern "C"
 
 void update_and_render(MK_Platform *pf, char c)
 {
-	MK_Editor *editor = (MK_Editor *)pf->memory;
 	
-	Arena *arena = &editor->arena;
-	Arena *trans = &editor->transient;
-	Arena_temp temp = arena_temp_begin(trans);
-	
-	if(!editor->initialized)
+	if(!pf->initialized)
 	{
-		editor->initialized = true;
+		pf->initialized = true;
+		mk_global_platform_api_init(&pf->api);
+		
+		Arena *arena = arena_create();
+		MK_Editor *editor = push_struct(arena, MK_Editor);
+		pf->memory = (void*)editor;
+		editor->arena = arena;
+		editor->transient = arena_create();
+		
 		tcxt_init();
-		arena_innit(arena, pf->mem_size / 2, (u8*)pf->memory + sizeof(MK_Editor));
-		arena_innit(trans, pf->mem_size / 2, arena->base + arena->size);
+		Arena_temp temp = arena_temp_begin(editor->transient);
 		
 		if(pf->argc == 2)
 		{
-			Str8 arg_str = push_str8f(trans, pf->argv[1]);
-			char *file_name = file_name_from_path(trans, arg_str);
-			Str8 abs_file_path = str8_join(trans, pf->app_dir, arg_str);
+			Str8 arg_str = push_str8f(editor->transient, pf->argv[1]);
+			char *file_name = file_name_from_path(editor->transient, arg_str);
+			Str8 abs_file_path = str8_join(editor->transient, pf->app_dir, arg_str);
 			
 			printf("%s\r\n", abs_file_path.c);
 			printf("%s\r\n", file_name);
 			
+			u8 *file = read_file(editor->transient, (char*)abs_file_path.c, FILE_TYPE_BINARY);
 			
-			u8 *file = read_file(trans, (char*)abs_file_path.c, FILE_TYPE_BINARY);
+			editor->window.w_row_list = mk_word_list_from_buffer(editor->arena, file);
+			printf("wewewewewew\r\n");
 			
-			editor->window.w_row_list = mk_word_list_from_buffer(arena, file);
 			//editor->window.scroll_row_node = editor->window.w_row_list.first;
+			
+			arena_temp_end(&temp);
 		}
 		else
 		{
@@ -54,9 +59,14 @@ void update_and_render(MK_Platform *pf, char c)
 		}
 		
 	}
+	MK_Editor *editor = (MK_Editor*)pf->memory;
+	Arena *arena = editor->arena;
+	Arena *trans = editor->transient;
+	Arena_temp temp = {};
 	
+	temp = arena_temp_begin(trans);
 	MK_Window *win = &editor->window;
-	win->wbuf = w_buffer_alloc(trans, Megabytes(1));
+	win->wbuf = w_buffer_alloc(trans, trans->cmt / 4);
 	win->arena = arena;
 	
 	mk_set_win_size(win);

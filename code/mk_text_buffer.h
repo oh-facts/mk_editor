@@ -7,7 +7,7 @@
 
 struct MK_Word
 {
-	char c;
+	char c;//[WORD_CAP];
 	i32 len;
 	b32 is_tab;
 	b32 is_space;

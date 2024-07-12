@@ -9,7 +9,34 @@
 
 #include "stdio.h"
 
+#include <unistd.h>
 #include "base_core.h"
+typedef void *(*os_reserve_fn)(u64 size);
+typedef b32 (*os_commit_fn)(void *ptr, u64 size);
+typedef void (*os_decommit_fn)(void *ptr, u64 size);
+typedef void (*os_release_fn)(void *ptr, u64 size);
+
+global os_reserve_fn os_reserve;
+global os_commit_fn os_commit;
+global os_decommit_fn os_decommit;
+global os_release_fn os_release;
+
+struct MK_Platform_api
+{
+	os_reserve_fn os_reserve;
+	os_commit_fn os_commit;
+	os_decommit_fn os_decommit;
+	os_release_fn os_release;
+};
+
+internal void mk_global_platform_api_init(MK_Platform_api *api)
+{
+	os_reserve = api->os_reserve;
+	os_commit = api->os_commit;
+	os_decommit = api->os_decommit;
+	os_release = api->os_release;
+}
+
 #include "base_core.cpp"
 
 #define STB_SPRINTF_IMPLEMENTATION
@@ -61,10 +88,9 @@ internal Str8 os_linux_get_app_dir(Arena *arena)
 	return out;
 }
 
-
 struct TCXT
 {
-	Arena arenas[2];
+	Arena *arenas[2];
 };
 
 global TCXT tcxt;
@@ -73,7 +99,7 @@ void tcxt_init()
 {
 	for(u32 i = 0; i < ARRAY_LEN(tcxt.arenas); i ++)
 	{
-		arena_innit(&tcxt.arenas[i], Megabytes(10), calloc(1,Megabytes(10)));
+		tcxt.arenas[i] = arena_create(Megabytes(10), Megabytes(64));
 	}
 }
 
@@ -85,7 +111,7 @@ internal Arena *tcxt_get_scratch(Arena **conflicts, u64 count)
 		b32 has_conflict = 0;
 		for(u32 j = 0; j < count; j ++)
 		{
-			if(&tcxt.arenas[i] == conflicts[j])
+			if(tcxt.arenas[i] == conflicts[j])
 			{
 				has_conflict = 1;
 				break;
@@ -93,12 +119,15 @@ internal Arena *tcxt_get_scratch(Arena **conflicts, u64 count)
 		}
 		if(!has_conflict)
 		{
-			out = &tcxt.arenas[i];
+			out = tcxt.arenas[i];
 		}
 	}
 	
 	return out;
 }
+
+#define scratch_begin(conflicts, count) arena_temp_begin(tcxt_get_scratch(conflicts, count))
+#define scratch_end(scratch) arena_temp_end(scratch);
 
 internal char *file_name_from_path(Arena *arena, Str8 path)
 {
@@ -119,16 +148,14 @@ internal char *file_name_from_path(Arena *arena, Str8 path)
 	return file_name_cstr;
 }
 
-#define scratch_begin(conflicts, count) arena_temp_begin(tcxt_get_scratch(conflicts, count))
-#define scratch_end(scratch) arena_temp_end(scratch);
-
 struct MK_Platform
 {
-	void *memory;
-	size_t mem_size;
 	int argc;
 	char **argv;
 	Str8 app_dir;
+	MK_Platform_api api;
+	void *memory;
+	b32 initialized;
 };
 
 typedef void (*update_and_render_fn)(MK_Platform *, char);

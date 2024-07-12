@@ -73,11 +73,21 @@ internal b32 is_pow_of_2(size_t addr)
 
 struct Arena
 {
-  size_t size;
-  u8* base;
-  size_t used;
+	u64 used;
 	u64 align;
+	u64 cmt;
+	u64 res;
 };
+
+#define ARENA_COMMIT_SIZE Kilobytes(64)
+#define ARENA_RESERVE_SIZE Megabytes(64)
+#define ARENA_HEADER_SIZE 128
+
+#define AlignPow2(x,b)     (((x) + (b) - 1)&(~((b) - 1)))
+#define Min(A,B) (((A)<(B))?(A):(B))
+#define Max(A,B) (((A)>(B))?(A):(B))
+#define ClampTop(A,X) Min(A,X)
+#define ClampBot(X,B) Max(X,B)
 
 struct Arena_temp
 {
@@ -89,11 +99,10 @@ struct Arena_temp
 #define push_array(arena,type,count) (type*)_arena_alloc(arena, sizeof(type) * count)
 
 internal void* _arena_alloc(Arena* arena, size_t size);
-
+internal Arena *arena_create(u64 cmt, u64 res, u64 align = DEFAULT_ALIGN);
+internal Arena *arena_create();
 internal Arena_temp arena_temp_begin(Arena *arena);
 internal void arena_temp_end(Arena_temp *temp);
-internal void arena_innit(Arena* arena, size_t size, void* base);
-internal void arena_innit_align(Arena *arena, size_t size, void *base, u64 align);
 internal void mem_cpy(void *dst, void *src, size_t size);
 
 #if defined OS_WIN32

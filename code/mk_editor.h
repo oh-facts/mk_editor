@@ -5,9 +5,8 @@
 
 struct MK_Editor
 {
-	Arena arena;
-	Arena transient;
-	b32 initialized;
+	Arena *arena;
+	Arena *transient;
 	
 	MK_Window window;
 };

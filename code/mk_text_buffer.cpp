@@ -217,9 +217,11 @@ MK_Word_row_list mk_word_list_from_buffer(Arena *arena, u8 *file)
 		}
 		else
 		{
+			
 			MK_Word_node *node = mk_word_push(arena, row);
 			node->w.c = *c;
 			c++;
+			
 		}
 		
 	}

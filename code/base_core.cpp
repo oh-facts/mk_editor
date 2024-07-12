@@ -1,56 +1,79 @@
 void* _arena_alloc(Arena* arena, size_t size)
 {
-  Assert(arena->used + size <= arena->size);
 	
-  void* out = arena->base + arena->used;
+	u64 pos_mem = AlignPow2(arena->used, arena->align);
+	u64 pos_new = pos_mem + size;
+	
+	if(arena->res < pos_new)
+	{
+		// TODO(mizu): deal with reserving more (chain arenas)
+		INVALID_CODE_PATH();
+	}
+	
+	if(arena->cmt < pos_new)
+	{
+		u64 cmt_new_aligned, cmt_new_clamped, cmt_new_size;
+		
+		cmt_new_aligned = AlignPow2(pos_new, ARENA_COMMIT_SIZE);
+		cmt_new_clamped = ClampTop(cmt_new_aligned, arena->res);
+		cmt_new_size    = cmt_new_clamped - arena->cmt;
+		os_commit((u8*)arena + arena->cmt, cmt_new_size);
+		arena->cmt = cmt_new_clamped;
+	}
+	
+	void *memory = 0;
   
-  size_t mod = (size_t)out & (arena->align - 1);
+  if (arena->cmt >= pos_new) 
+	{
+    memory = (u8*)arena + pos_mem;
+    arena->used = pos_new;
+	}
 	
-  if(mod != 0)
-  {
-		size_t adjustment = arena->align - mod;
-    out = (u8*)out + adjustment;
-		arena->used += adjustment;
-  }
-	
-  arena->used += size;
-  return out;
+	return memory;
 }
 
 Arena_temp arena_temp_begin(Arena *arena)
 {
-  Arena_temp out = {
-    .arena = arena,
-    .pos = arena->used,
-  };
-  return out;
+	Arena_temp out = {
+		.arena = arena,
+		.pos = arena->used,
+	};
+	return out;
 }
 
 void arena_temp_end(Arena_temp *temp)
 {
-  temp->arena->used = temp->pos;
+	temp->arena->used = temp->pos;
 }
 
-void arena_innit(Arena* arena, size_t size, void* base)
+Arena *arena_create()
 {
-  arena_innit_align(arena, size, base, DEFAULT_ALIGN);
+	return arena_create(ARENA_COMMIT_SIZE, ARENA_RESERVE_SIZE, DEFAULT_ALIGN);
 }
 
-void arena_innit_align(Arena *arena, size_t size, void *base, u64 align)
+Arena *arena_create(u64 cmt, u64 res, u64 align)
 {
-	arena->size = size;
-  arena->base = (u8*)base;
+	Arena *arena = 0;
+	
+	void *memory = os_reserve(res);
+	os_commit(memory, cmt);
+	
+	arena = (Arena*)memory;
+	arena->used = ARENA_HEADER_SIZE;
 	arena->align = align;
-  arena->used = 0;
+	arena->cmt = AlignPow2(cmt, getpagesize());
+	arena->res = res;
+	
+	return arena;
 }
 
 void mem_cpy(void *dst, void *src, size_t size)
 {
-  u8 *_dst = (u8*)dst;
-  u8 *_src = (u8*)src;
-  
-  for(u32 i = 0; i < size; i ++)
-  {
-    _dst[i] = _src[i];
-  }
+	u8 *_dst = (u8*)dst;
+	u8 *_src = (u8*)src;
+	
+	for(u32 i = 0; i < size; i ++)
+	{
+		_dst[i] = _src[i];
+	}
 }
