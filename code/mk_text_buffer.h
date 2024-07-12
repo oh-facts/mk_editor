@@ -48,7 +48,7 @@ struct MK_Word_row_list
 	MK_Word_row_node *last;
 	
 	i32 count;
-	MK_Word_row_node *row_index_nodes[10000];
+	MK_Word_row_node *row_index_nodes[100000];
 };
 
 internal MK_Word_node *mk_word_push(Arena *arena, MK_Word_row *row);

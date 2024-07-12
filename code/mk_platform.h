@@ -56,6 +56,37 @@ internal void mk_global_platform_api_init(MK_Platform_api *api)
 #define submit_clear_screen() write(STDOUT_FILENO,"\x1b[2J", 4)
 #define submit_reset_cursor() write(STDOUT_FILENO, "\x1b[H", 3)
 
+enum DEBUG_CYCLE_COUNTER
+{
+	DEBUG_CYCLE_COUNTER_UPDATE_AND_RENDER,
+	DEBUG_CYCLE_COUNTER_COUNT
+};
+
+struct debug_cycle_counter
+{
+	u64 cycle_count;
+	u32 hit_count;
+};
+
+struct TCXT
+{
+	Arena *arenas[2];
+	debug_cycle_counter counters[DEBUG_CYCLE_COUNTER_COUNT];
+};
+
+global TCXT tcxt;
+
+struct MK_Platform
+{
+	int argc;
+	char **argv;
+	Str8 app_dir;
+	MK_Platform_api api;
+	b32 initialized;
+	b32 reloaded;
+	void *memory;
+};
+
 internal void enable_raw_mode()
 {
 	termios raw;
@@ -88,18 +119,26 @@ internal Str8 os_linux_get_app_dir(Arena *arena)
 	return out;
 }
 
-struct TCXT
-{
-	Arena *arenas[2];
-};
+#define BEGIN_TIMED_BLOCK(ID) u64 start_cycle_count_##ID = __rdtsc(); ++tcxt.counters[DEBUG_CYCLE_COUNTER_##ID].hit_count
+#define END_TIMED_BLOCK(ID)  tcxt.counters[DEBUG_CYCLE_COUNTER_##ID].cycle_count += __rdtsc() - start_cycle_count_##ID
 
-global TCXT tcxt;
-
-void tcxt_init()
+internal void tcxt_init()
 {
 	for(u32 i = 0; i < ARRAY_LEN(tcxt.arenas); i ++)
 	{
 		tcxt.arenas[i] = arena_create(Megabytes(10), Megabytes(64));
+	}
+}
+
+internal void process_debug_counters()
+{
+	for(i32 i = 0; i < ARRAY_LEN(tcxt.counters); i ++)
+	{
+		debug_cycle_counter *counter = tcxt.counters + i;
+		
+		//printf("%d: %lu\n", i, counter->cycle_count);
+		counter->hit_count = 0;
+		counter->cycle_count = 0;
 	}
 }
 
@@ -147,17 +186,6 @@ internal char *file_name_from_path(Arena *arena, Str8 path)
 	
 	return file_name_cstr;
 }
-
-struct MK_Platform
-{
-	int argc;
-	char **argv;
-	Str8 app_dir;
-	MK_Platform_api api;
-	b32 initialized;
-	b32 reloaded;
-	void *memory;
-};
 
 typedef void (*update_and_render_fn)(MK_Platform *, char);
 
@@ -207,17 +235,4 @@ u8 *read_file(Arena *arena, const char *filepath, FILE_TYPE type)
   return buffer;
 }
 
-enum DEBUG_CYCLE_COUNTER
-{
-	DEBUG_CYCLE_COUNTER_UPDATE_AND_RENDER,
-	DEBUG_CYCLE_COUNTER_COUNT
-};
-
-struct debug_cycle_counter
-{
-	u64 cycle_count;
-};
-
-#define BEGIN_TIMED_BLOCK(ID) u64 start_cycle_count_##ID = __rdtsc();
-#define END_TIMED_BLOCK(ID) 
 #endif //MK_PLATFORM_H

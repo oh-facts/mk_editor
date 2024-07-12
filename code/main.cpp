@@ -106,7 +106,9 @@ int main(int argc, char **argv)
 			update_and_render = (update_and_render_fn)dlsym(handle, "update_and_render");
 			pf.reloaded = 1;
 		}
+		
 		update_and_render(&pf, c);
+		
 	}while(read(STDIN_FILENO, &c, 1) == 1);
 	
 	submit_clear_screen();

@@ -20,7 +20,7 @@ extern "C"
 
 void update_and_render(MK_Platform *pf, char c)
 {
-	
+	BEGIN_TIMED_BLOCK(UPDATE_AND_RENDER);
 	if(pf->reloaded)
 	{
 		mk_global_platform_api_init(&pf->api);
@@ -32,7 +32,7 @@ void update_and_render(MK_Platform *pf, char c)
 	{
 		pf->initialized = true;
 		mk_global_platform_api_init(&pf->api);
-		Arena *arena = arena_create();
+		Arena *arena = arena_create(Megabytes(1), Gigabytes(1));
 		MK_Editor *editor = push_struct(arena, MK_Editor);
 		pf->memory = (void*)editor;
 		editor->arena = arena;
@@ -81,8 +81,10 @@ void update_and_render(MK_Platform *pf, char c)
 	mk_cursor_mv(win, c);
 	
 	mk_window_begin_render(win);
+	local_persist u64 cycle_count = 0;
+	local_persist u32 hit_count = 0;
 	
-	win->status_msg = push_str8f(trans, "row:%d col:%d scroll:%d mk editor v%d.%d.%d",win->cursor.row + 1, win->cursor.col + 1, win->scroll_row, MK_VERSION_MAJOR, MK_VERSION_MINOR ,MK_VERSION_PATCH);
+	win->status_msg = push_str8f(trans, "hc:%u cc:%lu row:%d col:%d scroll:%d mk editor v%d.%d.%d", hit_count, cycle_count, win->cursor.row + 1, win->cursor.col + 1, win->scroll_row, MK_VERSION_MAJOR, MK_VERSION_MINOR ,MK_VERSION_PATCH);
 	
 	mk_window_render(win);
 	
@@ -90,4 +92,12 @@ void update_and_render(MK_Platform *pf, char c)
 	
 	mk_window_submit(win);
 	arena_temp_end(&temp);
+	
+	END_TIMED_BLOCK(UPDATE_AND_RENDER);
+	
+	cycle_count = tcxt.counters[DEBUG_CYCLE_COUNTER_UPDATE_AND_RENDER].cycle_count;
+	hit_count = tcxt.counters[DEBUG_CYCLE_COUNTER_UPDATE_AND_RENDER].hit_count;
+	
+	
+	process_debug_counters();
 }
