@@ -4,6 +4,7 @@
 
 #include <dlfcn.h>
 #include <sys/mman.h>
+
 internal void *os_linux_reserve(u64 size)
 {
 	void *out = mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -103,6 +104,7 @@ int main(int argc, char **argv)
 			dlclose(handle);
 			handle = dlopen((char*)dll_path.c, RTLD_LAZY);
 			update_and_render = (update_and_render_fn)dlsym(handle, "update_and_render");
+			pf.reloaded = 1;
 		}
 		update_and_render(&pf, c);
 	}while(read(STDIN_FILENO, &c, 1) == 1);

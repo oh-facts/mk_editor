@@ -154,8 +154,9 @@ struct MK_Platform
 	char **argv;
 	Str8 app_dir;
 	MK_Platform_api api;
-	void *memory;
 	b32 initialized;
+	b32 reloaded;
+	void *memory;
 };
 
 typedef void (*update_and_render_fn)(MK_Platform *, char);
@@ -206,4 +207,17 @@ u8 *read_file(Arena *arena, const char *filepath, FILE_TYPE type)
   return buffer;
 }
 
+enum DEBUG_CYCLE_COUNTER
+{
+	DEBUG_CYCLE_COUNTER_UPDATE_AND_RENDER,
+	DEBUG_CYCLE_COUNTER_COUNT
+};
+
+struct debug_cycle_counter
+{
+	u64 cycle_count;
+};
+
+#define BEGIN_TIMED_BLOCK(ID) u64 start_cycle_count_##ID = __rdtsc();
+#define END_TIMED_BLOCK(ID) 
 #endif //MK_PLATFORM_H

@@ -5,6 +5,12 @@
 
 #define WORD_CAP 64
 
+struct MK_Text_buffer
+{
+	Str8 str;
+	
+};
+
 struct MK_Word
 {
 	char c;//[WORD_CAP];

@@ -21,11 +21,17 @@ extern "C"
 void update_and_render(MK_Platform *pf, char c)
 {
 	
+	if(pf->reloaded)
+	{
+		mk_global_platform_api_init(&pf->api);
+		tcxt_init();
+		pf->reloaded = 0;
+	}
+	
 	if(!pf->initialized)
 	{
 		pf->initialized = true;
 		mk_global_platform_api_init(&pf->api);
-		
 		Arena *arena = arena_create();
 		MK_Editor *editor = push_struct(arena, MK_Editor);
 		pf->memory = (void*)editor;
@@ -59,6 +65,7 @@ void update_and_render(MK_Platform *pf, char c)
 		}
 		
 	}
+	
 	MK_Editor *editor = (MK_Editor*)pf->memory;
 	Arena *arena = editor->arena;
 	Arena *trans = editor->transient;
