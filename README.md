@@ -28,7 +28,7 @@ Binaries built in `out/`
 
 startup
 160m
-
+593 472 386
 navigation
 200k - 300k
 
@@ -40,5 +40,8 @@ deletion
 
 These are wild.
 
-// basic vector of lines
-667 888 127
+// basic vector of lines + free list for char strings
+~1 bil
+
+// basic vector of lines + 300 char max row limit (I am thinking of doing chaining for larger lines. 300 col doesn't seem too wasteful)
+62 632 689

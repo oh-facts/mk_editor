@@ -2,6 +2,8 @@ MK_Text_buffer mk_load_text_buffer(u8 *file)
 {
 	MK_Text_buffer out = {};
 	out.row_arena = arena_create(ARENA_COMMIT_SIZE, Gigabytes(1));
+	out.char_arena = arena_create(ARENA_COMMIT_SIZE, Gigabytes(1));
+	out.used = 0;
 	out.row = 0;
 	out.row_max = 10000;
 	
@@ -24,8 +26,8 @@ MK_Text_buffer mk_load_text_buffer(u8 *file)
 			}
 			
 			MK_Text_row *row = out.rows + out.row++;
-			row->arena = arena_from_list(&out);
-			row->str.c = push_array(row->arena, u8, num_col);
+			//row->arena = arena_from_list(&out);
+			row->str.c = push_array(out.char_arena, u8, num_col);
 			mem_cpy(row->str.c, f, num_col);
 			row->str.len = num_col;
 			num_col = 0;

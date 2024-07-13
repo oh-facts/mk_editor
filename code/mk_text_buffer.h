@@ -5,18 +5,23 @@
 
 struct MK_Text_row
 {
-	Arena *arena;
+	//Arena *arena;
 	Str8 str;
 };
 
 struct MK_Text_buffer
 {
-	Arena *free_list;
+	//Arena *free_list;
 	
 	Arena *row_arena;
+	Arena *char_arena;
+	
 	MK_Text_row *rows;
 	i32 row;
 	i32 row_max;
+	
+	u8 *virt;
+	u64 used;
 };
 
 internal void mk_buffer_print_raw(MK_Text_buffer *buf)
@@ -31,7 +36,7 @@ internal void mk_buffer_print_raw(MK_Text_buffer *buf)
 		printf("\r\n");
 	}
 }
-
+/*
 internal Arena *arena_from_list(MK_Text_buffer *tbuf)
 {
 	Arena *out = tbuf->free_list;
@@ -54,7 +59,7 @@ internal void arena_release(MK_Text_buffer *tbuf, Arena *arena)
 	arena->next = tbuf->free_list;
 	tbuf->free_list = arena;
 }
-
+*/
 internal MK_Text_buffer mk_load_text_buffer(u8 *file);
 
 #endif //MK_TEXT_BUFFER_H
