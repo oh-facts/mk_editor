@@ -73,6 +73,7 @@ internal b32 is_pow_of_2(size_t addr)
 
 struct Arena
 {
+	Arena *next;
 	u64 used;
 	u64 align;
 	u64 cmt;
@@ -82,6 +83,7 @@ struct Arena
 #define ARENA_COMMIT_SIZE Kilobytes(64)
 #define ARENA_RESERVE_SIZE Megabytes(64)
 #define ARENA_HEADER_SIZE 128
+#define ARENA_ARR_LEN(arena, type) (arena->used / sizeof(type))
 
 #define AlignPow2(x,b)     (((x) + (b) - 1)&(~((b) - 1)))
 #define Min(A,B) (((A)<(B))?(A):(B))

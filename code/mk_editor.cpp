@@ -39,10 +39,10 @@ void update_and_render(MK_Platform *pf, char c)
 		editor->transient = arena_create();
 		
 		tcxt_init();
-		Arena_temp temp = arena_temp_begin(editor->transient);
 		
 		if(pf->argc == 2)
 		{
+			Arena_temp temp = arena_temp_begin(editor->transient);
 			Str8 arg_str = push_str8f(editor->transient, pf->argv[1]);
 			char *file_name = file_name_from_path(editor->transient, arg_str);
 			Str8 abs_file_path = str8_join(editor->transient, pf->app_dir, arg_str);
@@ -51,9 +51,8 @@ void update_and_render(MK_Platform *pf, char c)
 			printf("%s\r\n", file_name);
 			
 			u8 *file = read_file(editor->transient, (char*)abs_file_path.c, FILE_TYPE_BINARY);
-			
-			editor->window.w_row_list = mk_word_list_from_buffer(editor->arena, file);
-			printf("wewewewewew\r\n");
+			MK_Editor *editor = (MK_Editor*)pf->memory;
+			editor->window.tbuf = mk_load_text_buffer(file);
 			
 			//editor->window.scroll_row_node = editor->window.w_row_list.first;
 			
@@ -67,6 +66,7 @@ void update_and_render(MK_Platform *pf, char c)
 	}
 	
 	MK_Editor *editor = (MK_Editor*)pf->memory;
+	
 	Arena *arena = editor->arena;
 	Arena *trans = editor->transient;
 	Arena_temp temp = {};
@@ -79,24 +79,32 @@ void update_and_render(MK_Platform *pf, char c)
 	mk_set_win_size(win);
 	
 	mk_cursor_mv(win, c);
+	local_persist u64 cycle_counts[DEBUG_CYCLE_COUNTER_COUNT] = {};
 	
+	BEGIN_TIMED_BLOCK(RECORD);
 	mk_window_begin_render(win);
-	local_persist u64 cycle_count = 0;
-	local_persist u32 hit_count = 0;
 	
-	win->status_msg = push_str8f(trans, "hc:%u cc:%lu row:%d col:%d scroll:%d mk editor v%d.%d.%d", hit_count, cycle_count, win->cursor.row + 1, win->cursor.col + 1, win->scroll_row, MK_VERSION_MAJOR, MK_VERSION_MINOR ,MK_VERSION_PATCH);
+	// TODO(mizu): make a fn to format numbers so bytes are converted to bigger types automatically
+	win->status_msg = push_str8f(trans, "res:%.fG cmt:%.fM cc:%lu cc:%lu cc:%lu row:%d col:%d scroll:%d mk editor v%d.%d.%d", pf->res * 0.000000001, pf->cmt * 0.000001, cycle_counts[0], cycle_counts[1], cycle_counts[2], win->cursor.row + 1, win->cursor.col + 1, win->scroll_row, MK_VERSION_MAJOR, MK_VERSION_MINOR ,MK_VERSION_PATCH);
+	
 	
 	mk_window_render(win);
 	
 	mk_window_end_render(win);
+	END_TIMED_BLOCK(RECORD);
 	
+	BEGIN_TIMED_BLOCK(SUBMIT);
 	mk_window_submit(win);
+	END_TIMED_BLOCK(SUBMIT);
+	
 	arena_temp_end(&temp);
 	
 	END_TIMED_BLOCK(UPDATE_AND_RENDER);
 	
-	cycle_count = tcxt.counters[DEBUG_CYCLE_COUNTER_UPDATE_AND_RENDER].cycle_count;
-	hit_count = tcxt.counters[DEBUG_CYCLE_COUNTER_UPDATE_AND_RENDER].hit_count;
+	for(i32 i = 0; i < DEBUG_CYCLE_COUNTER_COUNT; i++)
+	{
+		cycle_counts[i] = tcxt.counters[i].cycle_count;
+	}
 	
 	
 	process_debug_counters();

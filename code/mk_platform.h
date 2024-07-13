@@ -59,7 +59,16 @@ internal void mk_global_platform_api_init(MK_Platform_api *api)
 enum DEBUG_CYCLE_COUNTER
 {
 	DEBUG_CYCLE_COUNTER_UPDATE_AND_RENDER,
+	DEBUG_CYCLE_COUNTER_RECORD,
+	DEBUG_CYCLE_COUNTER_SUBMIT,
 	DEBUG_CYCLE_COUNTER_COUNT
+};
+
+global char *debug_cycle_to_str[DEBUG_CYCLE_COUNTER_COUNT] = 
+{
+	"update and render",
+	"record",
+	"submit",
 };
 
 struct debug_cycle_counter
@@ -84,6 +93,8 @@ struct MK_Platform
 	MK_Platform_api api;
 	b32 initialized;
 	b32 reloaded;
+	u64 res;
+	u64 cmt;
 	void *memory;
 };
 

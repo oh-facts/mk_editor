@@ -24,7 +24,7 @@ struct MK_Window
 	MK_Cursor cursor;
 	W_Buffer wbuf;
 	
-	MK_Word_row_list w_row_list;
+	MK_Text_buffer tbuf;
 	Str8 status_msg;
 };
 

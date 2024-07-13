@@ -3,65 +3,58 @@
 #ifndef MK_TEXT_BUFFER_H
 #define MK_TEXT_BUFFER_H
 
-#define WORD_CAP 64
+struct MK_Text_row
+{
+	Arena *arena;
+	Str8 str;
+};
 
 struct MK_Text_buffer
 {
-	Str8 str;
+	Arena *free_list;
 	
+	Arena *row_arena;
+	MK_Text_row *rows;
+	i32 row;
+	i32 row_max;
 };
 
-struct MK_Word
+internal void mk_buffer_print_raw(MK_Text_buffer *buf)
 {
-	char c;//[WORD_CAP];
-	i32 len;
-	b32 is_tab;
-	b32 is_space;
-};
+	for(i32 i = 0; i < buf->row; i ++)
+	{
+		MK_Text_row *row = buf->rows + i;
+		for(i32 j = 0; j < row->str.len; j ++)
+		{
+			printf("%c",row->str.c[j]);
+		}
+		printf("\r\n");
+	}
+}
 
-struct MK_Word_node
+internal Arena *arena_from_list(MK_Text_buffer *tbuf)
 {
-	MK_Word_node *next;
-	MK_Word w;
-};
-
-struct MK_Word_row
-{
-	MK_Word_node *first;
-	MK_Word_node *last;
+	Arena *out = tbuf->free_list;
 	
-	i32 num_col;
-	i32 num_tab;
-	//i32 count;
-};
-
-struct MK_Word_row_node
-{
-	MK_Word_row_node *next;
-	MK_Word_row_node *prev;
-	MK_Word_row row;
-};
-
-struct MK_Word_row_list
-{
-	MK_Word_row_node *first;
-	MK_Word_row_node *last;
+	if(out)
+	{
+		tbuf->free_list = tbuf->free_list->next;
+		out->used = 0;
+	}
+	else
+	{
+		out = arena_create(200, Kilobytes(3));
+	}
 	
-	i32 count;
-	MK_Word_row_node *row_index_nodes[100000];
-};
+	return out;
+}
 
-internal MK_Word_node *mk_word_push(Arena *arena, MK_Word_row *row);
-internal MK_Word_row_node *mk_word_row_push(Arena *arena, MK_Word_row_list *list);
+internal void arena_release(MK_Text_buffer *tbuf, Arena *arena)
+{
+	arena->next = tbuf->free_list;
+	tbuf->free_list = arena;
+}
 
-internal MK_Word_node *mk_word_insert(Arena *arena, MK_Word_row *row, i32 index);
-internal MK_Word_row_node *mk_word_row_insert(Arena *arena, MK_Word_row_list *list, i32 index);
-
-internal void mk_word_remove(Arena *arena, MK_Word_row *row, i32 index);
-internal void mk_word_row_remove(Arena *arena, MK_Word_row_list *list, i32 index);
-
-internal MK_Word_row_list mk_word_list_from_buffer(Arena *arena, u8 *file);
-
-internal MK_Word_row_node *mk_get_word_row(MK_Word_row_list* list, i32 index);
+internal MK_Text_buffer mk_load_text_buffer(u8 *file);
 
 #endif //MK_TEXT_BUFFER_H

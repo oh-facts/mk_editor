@@ -19,3 +19,26 @@ Binaries built in `out/`
 ```
 ./yk <filename>
 ```
+
+
+// benchmarking stuff i am making a note of
+31,952 loc
+1,132,039 characters
+(stb_image copied 4 times) 
+
+startup
+160m
+
+navigation
+200k - 300k
+
+insertion
+600k
+
+deletion
+400k
+
+These are wild.
+
+// basic vector of lines
+667 888 127
