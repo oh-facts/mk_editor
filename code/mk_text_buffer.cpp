@@ -28,7 +28,6 @@ MK_Word_row_node *mk_word_row_push(Arena *arena, MK_Word_row_list *list)
 	{
 		list->last = list->first = out;
 	}
-	list->row_index_nodes[list->count] = out;
 	
 	list->count++;
 	
@@ -64,6 +63,23 @@ MK_Word_node *mk_word_insert(Arena *arena, MK_Word_row *row, i32 index)
 	return out;
 }
 
+MK_Word_row_node *mk_get_word_row(MK_Word_row_list *list, i32 index)
+{
+	i32 count = 0;
+	MK_Word_row_node *cur = list->first;
+	while(cur)
+	{
+		if(count == index)
+		{
+			break;
+		}
+		count++;
+		cur = cur->next;
+	}
+	
+	return cur;
+}
+
 MK_Word_row_node *mk_word_row_insert(Arena *arena, MK_Word_row_list *list, i32 index)
 {
 	if(index < 0 || index > list->count)
@@ -94,18 +110,12 @@ MK_Word_row_node *mk_word_row_insert(Arena *arena, MK_Word_row_list *list, i32 i
 	}
 	else
 	{
-		MK_Word_row_node *at = list->row_index_nodes[index];
-		out->next = at;
-		out->prev = at->prev;
-		if(at->prev) at->prev->next = out;
-		at->prev = out;
+		MK_Word_row_node *cur = mk_get_word_row(list, index);
+		out->next = cur;
+		out->prev = cur->prev;
+		if(cur->prev) cur->prev->next = out;
+		cur->prev = out;
 	}
-	
-	for(i32 i = list->count; i > index; i--)
-	{
-		list->row_index_nodes[i] = list->row_index_nodes[i - 1];
-	}
-	list->row_index_nodes[index] = out;
 	
 	list->count++;
 	
@@ -148,7 +158,7 @@ void mk_word_row_remove(Arena *arena, MK_Word_row_list *list, i32 index)
 		return;
 	}
 	
-	MK_Word_row_node *rem = list->row_index_nodes[index];
+	MK_Word_row_node *rem = mk_get_word_row(list, index);
 	
 	if(rem->prev)
 	{
@@ -168,10 +178,6 @@ void mk_word_row_remove(Arena *arena, MK_Word_row_list *list, i32 index)
 		list->last = rem->prev;
 	}
 	
-	for(i32 i = index; i < list->count - 1; i++)
-	{
-		list->row_index_nodes[i] = list->row_index_nodes[i + 1];
-	}
 	
 	list->count--;
 	
@@ -261,29 +267,4 @@ MK_Word_row_list mk_word_list_from_buffer(Arena *arena, u8 *file)
 #endif
 	
 	return w_row_list;
-}
-
-MK_Word_row_node *mk_get_word_row(MK_Word_row_list* list, i32 index)
-{
-	
-#if 0
-	MK_Word_row_node *row_node = list->first; // + i + win->scroll_row;
-	int i = 0;
-	while(row_node)
-	{
-		
-		if(i == index)
-		{
-			break;
-		}
-		
-		i++;
-		row_node = row_node->next;
-	}
-#else
-	MK_Word_row_node *row_node = list->row_index_nodes[index];
-	
-#endif
-	
-	return row_node;
 }

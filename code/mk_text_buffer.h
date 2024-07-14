@@ -48,7 +48,6 @@ struct MK_Word_row_list
 	MK_Word_row_node *last;
 	
 	i32 count;
-	MK_Word_row_node *row_index_nodes[100000];
 };
 
 internal MK_Word_node *mk_word_push(Arena *arena, MK_Word_row *row);
@@ -62,6 +61,6 @@ internal void mk_word_row_remove(Arena *arena, MK_Word_row_list *list, i32 index
 
 internal MK_Word_row_list mk_word_list_from_buffer(Arena *arena, u8 *file);
 
-internal MK_Word_row_node *mk_get_word_row(MK_Word_row_list* list, i32 index);
+internal MK_Word_row_node *mk_get_word_row(MK_Word_row_list *list, i32 index);
 
 #endif //MK_TEXT_BUFFER_H
