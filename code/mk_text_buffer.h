@@ -48,6 +48,7 @@ struct MK_Word_row_list
 	MK_Word_row_node *last;
 	
 	i32 count;
+	
 	MK_Word_row_node *row_index_nodes[100000];
 };
 
