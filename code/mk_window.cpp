@@ -165,6 +165,7 @@ void mk_cursor_mv(MK_Window *win, char c)
         //new_row->num_tab = 0;
 			}
 			curs->row++;
+			curs->col = 0;
 		}break;
 		
 		case MK_KEY_DOWN:
