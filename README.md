@@ -20,6 +20,8 @@ Binaries built in `out/`
 ./yk <filename>
 ```
 
+<!--
+schizo rants
 
 // benchmarking stuff i am making a note of
 31,952 loc
@@ -44,4 +46,7 @@ These are wild.
 ~1 bil
 
 // basic vector of lines + 300 char max row limit (I am thinking of doing chaining for larger lines. 300 col doesn't seem too wasteful)
+// I think my vm is just crap. These are still insane cycle counts
 62 632 689
+
+-->

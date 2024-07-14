@@ -8,7 +8,7 @@
 #define MK_VERSION_PATCH (0)
 
 #include "stdio.h"
-
+#include "string.h"
 #include <unistd.h>
 #include "base_core.h"
 typedef void *(*os_reserve_fn)(u64 size);

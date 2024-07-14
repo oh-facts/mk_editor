@@ -93,17 +93,28 @@ void mk_cursor_mv(MK_Window *win, char c)
 			{
 				curs->row --;
 			}
-			break;
-			case MK_KEY_ENTER:
+		}break;
+		
+		case MK_KEY_ENTER:
+		{
+			for(i32 i = win->tbuf.row; i >= curs->row; i --)
 			{
+				MK_Text_row *row = win->tbuf.rows + i;
+				mem_cpy(row + 1, row, sizeof(MK_Text_row));
 				
 			}
+			row->str.c = push_array(win->tbuf.char_arena, u8, 300);
+			row->str.len = 0;
+			win->tbuf.row++;
 			curs->row++;
 		}break;
 		
 		case MK_KEY_DOWN:
 		{
-			curs->row ++;
+			if(curs->row < win->tbuf.row - 1)
+			{
+				curs->row ++;
+			}
 			
 		}break;
 		case MK_KEY_LEFT:
@@ -121,7 +132,10 @@ void mk_cursor_mv(MK_Window *win, char c)
 			}
 			else
 			{
-				curs->row++;
+				if(curs->row < win->tbuf.row - 1)
+				{
+					curs->row++;
+				}
 			}
 		}break;
 		case MK_KEY_HOME:
@@ -130,26 +144,70 @@ void mk_cursor_mv(MK_Window *win, char c)
 		}break;
 		case MK_KEY_END:
 		{
-			//curs->row = win->w_row_list.count - 1;
+			curs->row = win->tbuf.row - 1;//win->w_row_list.count - 1;
 		}break;
 		case MK_KEY_PAGE_UP:
 		case MK_KEY_PAGE_DOWN:
 		{
 			
 		}break;
+		
 		case MK_KEY_DEL:
 		{
-			
-		}break;
+			if (curs->col < row->str.len) 
+			{
+				Arena_temp scratch = scratch_begin(0, 0);
+				
+				char *buf = push_array(scratch.arena, char, 300);
+				mem_cpy(buf, row->str.c, row->str.len);
+				
+				mem_cpy(row->str.c + curs->col, (u8*)buf + curs->col + 1, row->str.len - curs->col - 1);
+				
+				row->str.len--;
+				scratch_end(&scratch);
+			}
+		} break;
+		
 		case MK_KEY_BACK_SPACE:
 		{
-			
-		}break;
+			if (curs->col > 0) 
+			{
+				Arena_temp scratch = scratch_begin(0, 0);
+				
+				char *buf = push_array(scratch.arena, char, 300);
+				mem_cpy(buf, row->str.c, row->str.len);
+				
+				mem_cpy(row->str.c + curs->col - 1, (u8*)buf + curs->col, row->str.len - curs->col);
+				
+				row->str.len--;
+				curs->col--;
+				scratch_end(&scratch);
+			}
+		} break;
 		
 		default:
 		{
+			Arena_temp scratch = scratch_begin(0,0);
 			
+			char *buf = push_array(scratch.arena, char, 300);
+			mem_cpy(buf, row->str.c, row->str.len);
+			
+			mem_cpy(row->str.c, buf, curs->col);
+			row->str.c[curs->col] = c;
+			mem_cpy(row->str.c + curs->col + 1, (u8*)buf + curs->col, row->str.len - curs->col);
+			
+			row->str.len++;
+			scratch_end(&scratch);
+			curs->col++;
 		}break;
+	}
+	
+	row = win->tbuf.rows + curs->row;
+	
+	// snapping
+	if(curs->col > row->str.len)
+	{
+		curs->col = row->str.len; 
 	}
 	
 }
