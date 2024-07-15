@@ -39,26 +39,25 @@ void mk_window_render(MK_Window *win)
 #else
 	i32 i = 0;
 	
-	MK_Word_row_node *row_node = mk_get_word_row(&win->w_row_list, win->scroll_row);
+	MK_Word_row *row = mk_get_word_row(&win->w_row_list, win->scroll_row);
 	
-	while(row_node && i < win->row)
+	while(row && i < win->row)
 	{
-		MK_Word_row *row = &row_node->row;
-		MK_Word_node *cur = row->first;
+		MK_Word *cur = row->first;
 		w_buffer_pushf(&win->wbuf, "%5d| ", win->scroll_row + i + 1);
 		while(cur)
 		{
-			if(cur->w.is_tab)
+			if(cur->is_tab)
 			{
 				w_buffer_push(&win->wbuf, " ", 1);
 			}
-			else if(cur->w.is_space)
+			else if(cur->is_space)
 			{
 				w_buffer_push(&win->wbuf, " ", 1);
 			}
 			else
 			{
-				w_buffer_push(&win->wbuf, &cur->w.c, 1);
+				w_buffer_push(&win->wbuf, &cur->c, 1);
 			}
 			cur = cur->next;
 		}
@@ -69,7 +68,7 @@ void mk_window_render(MK_Window *win)
 			w_buffer_push(&win->wbuf, "\r\n", 2);
 		}
 		i++;
-		row_node = row_node->next;
+		row = row->next;
 		
 	}
 	
@@ -121,8 +120,8 @@ void mk_cursor_mv(MK_Window *win, char c)
 	MK_KEY key = mk_key_from_char(c);
 	MK_Cursor *curs = &win->cursor;
 	
-	MK_Word_row_node *wrow_node = mk_get_word_row(&win->w_row_list, win->cursor.row);
-	MK_Word_row *wrow = &wrow_node->row;
+	MK_Word_row *wrow = mk_get_word_row(&win->w_row_list, win->cursor.row);
+	
 	switch(key)
 	{
 		case MK_KEY_UP:
@@ -140,32 +139,31 @@ void mk_cursor_mv(MK_Window *win, char c)
 			}
 			else
 			{
-        MK_Word_row_node *new_row_node = mk_word_row_insert(win->arena, &win->w_row_list, win->cursor.row + 1);
-        MK_Word_row *new_row = &new_row_node->row;
-				
-        MK_Word_node *word_node = wrow->first;
+        MK_Word_row *new_row = mk_word_row_insert(win->arena, &win->w_row_list, win->cursor.row + 1);
+        
+        MK_Word *word = wrow->first;
 				
         for(i32 i = 0; i < curs->col - 1; i++)
         {
-					word_node = word_node->next;
+					word = word->next;
         }
 				
-        MK_Word_node *end_nodes = word_node->next;
-        MK_Word_node *last_end_node = wrow->last;
+        MK_Word *end = word->next;
+        MK_Word *last_end = wrow->last;
 				
-        word_node->next = nullptr;
-        wrow->last = word_node;
+        word->next = 0;
+        wrow->last = word;
 				
         i32 new_row_col_count = 0;
-        for (MK_Word_node *count_node = end_nodes; count_node != 0; count_node = count_node->next)
+        for (MK_Word *count = end; count != 0; count = count->next)
         {
 					new_row_col_count++;
         }
 				
         wrow->num_col = curs->col;
         
-        new_row->first = end_nodes;
-        new_row->last = last_end_node;
+        new_row->first = end;
+        new_row->last = last_end;
         new_row->num_col = new_row_col_count;
         //new_row->num_tab = 0;
 			}
@@ -187,7 +185,7 @@ void mk_cursor_mv(MK_Window *win, char c)
 			else if(curs->row > 0)
 			{
 				curs->row --;
-				curs->col = mk_get_word_row(&win->w_row_list, curs->row)->row.num_col;
+				curs->col = mk_get_word_row(&win->w_row_list, curs->row)->num_col;
 			}
 		}break;
 		case MK_KEY_RIGHT:
@@ -222,20 +220,20 @@ void mk_cursor_mv(MK_Window *win, char c)
 		
 		case MK_KEY_BACK_SPACE:
 		{
-			MK_Word_row_node *above_row = mk_get_word_row(&win->w_row_list, curs->row - 1);
-			MK_Word_row_node *cur_row = above_row->next;
+			MK_Word_row *above_row = mk_get_word_row(&win->w_row_list, curs->row - 1);
+			MK_Word_row *cur_row = above_row->next;
 			
 			if(curs->col > 0)
 			{
 				mk_word_remove(wrow,curs->col-- - 1);
 			}
-			else if (above_row->row.num_col > 0)
+			else if (above_row->num_col > 0)
 			{
-				above_row->row.last->next = cur_row->row.first;
-				above_row->row.last = cur_row->row.last;
-				i32 new_col = above_row->row.num_col;
+				above_row->last->next = cur_row->first;
+				above_row->last = cur_row->last;
+				i32 new_col = above_row->num_col;
 				
-				above_row->row.num_col += cur_row->row.num_col;
+				above_row->num_col += cur_row->num_col;
 				
 				mk_word_row_remove(&win->w_row_list, curs->row);
 				curs->col = new_col;
@@ -257,8 +255,8 @@ void mk_cursor_mv(MK_Window *win, char c)
 					break;
 				}
 				
-				MK_Word_node *node = mk_word_insert(win->arena, wrow, curs->col);
-				node->w.c = c;
+				MK_Word *node = mk_word_insert(win->arena, wrow, curs->col);
+				node->c = c;
 				
 				if(wrow->num_col == curs->col)
 				{
@@ -282,8 +280,7 @@ void mk_cursor_mv(MK_Window *win, char c)
 		}
 	}
 	
-	wrow_node = mk_get_word_row(&win->w_row_list, win->cursor.row);
-	wrow = &wrow_node->row;
+	wrow = mk_get_word_row(&win->w_row_list, win->cursor.row);
 	
 	// snapping
 	{
