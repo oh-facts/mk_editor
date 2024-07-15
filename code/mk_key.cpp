@@ -1,16 +1,18 @@
+// TODO(mizu): hash and index into it
 MK_KEY mk_key_from_char(char c)
 {
 	MK_KEY out = MK_KEY_NONE;
 	
 	if(c == '\x1b')
 	{
-		char seq[3];
+		char seq[6];
 		if(read(STDIN_FILENO, &seq, 2) == 2)
 		{
 			if(seq[0] == '[')
 			{
 				if(seq[1] >= '0' && seq[1] <= '9')
 				{
+					
 					if(read(STDIN_FILENO, &seq[2], 1) == 1 && seq[2] == '~')
 					{
 						switch(seq[1])
@@ -39,6 +41,24 @@ MK_KEY mk_key_from_char(char c)
 							}break;
 						}
 					}
+					
+					else if (seq[2] == ';') 
+					{
+						if (read(STDIN_FILENO, &seq[3], 2) && seq[3] == '5') 
+						{ 
+							
+							if(seq[4]  == 'H')
+							{
+								out = MK_KEY_CTRL_HOME;
+							}
+							else if(seq[4] == 'F')
+							{
+								out = MK_KEY_CTRL_END;
+							}
+							
+						}
+					}
+					
 				}
 				else
 				{
@@ -81,6 +101,8 @@ MK_KEY mk_key_from_char(char c)
 	{
 		out = MK_KEY_ENTER;
 	}
+	
+	
 	
 	return out;
 }

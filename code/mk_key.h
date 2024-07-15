@@ -15,6 +15,9 @@ enum MK_KEY
 	MK_KEY_HOME,
 	MK_KEY_END,
 	
+	MK_KEY_CTRL_HOME,
+	MK_KEY_CTRL_END,
+	
 	MK_KEY_PAGE_UP,
 	MK_KEY_PAGE_DOWN,
 	
@@ -37,6 +40,9 @@ global char *mk_key_to_cstr[MK_KEY_COUNT] =
 	
 	"MK_KEY_HOME",
 	"MK_KEY_END",
+	
+	"MK_KEY_CTRL_HOME",
+	"MK_KEY_CTRL_END",
 	
 	"MK_KEY_PAGE_UP",
 	"MK_KEY_PAGE_DOWN",

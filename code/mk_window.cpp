@@ -102,7 +102,10 @@ void mk_set_win_size(MK_Window *win)
 	winsize ws;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
 	
+	// space for status bar so minus
+	
 	win->row = ws.ws_row - 1;
+	
 	win->col = ws.ws_col;
 }
 
@@ -180,9 +183,19 @@ void mk_cursor_mv(MK_Window *win, char c)
 		}break;
 		case MK_KEY_HOME:
 		{
-			curs->row = 0;
+			curs->col = 0;
 		}break;
 		case MK_KEY_END:
+		{
+			MK_Word_row *row = mk_get_word_row(&win->w_row_list, win->cursor.row);
+			
+			curs->col = row->num_col;
+		}break;
+		case MK_KEY_CTRL_HOME:
+		{
+			curs->row = 0;
+		}break;
+		case MK_KEY_CTRL_END:
 		{
 			curs->row = win->w_row_list.count - 1;
 		}break;
@@ -191,6 +204,7 @@ void mk_cursor_mv(MK_Window *win, char c)
 		{
 			// jump to page end if not at page end.
 			// jump by a page if at page end.
+			// acct for edge cases
 		}break;
 		case MK_KEY_DEL:
 		{
