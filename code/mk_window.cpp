@@ -133,42 +133,7 @@ void mk_cursor_mv(MK_Window *win, char c)
 		}break;
 		case MK_KEY_ENTER:
 		{
-			if(curs->col == 0)
-			{
-        mk_word_row_insert(win->arena, &win->w_row_list, win->cursor.row);
-			}
-			else
-			{
-        MK_Word_row *new_row = mk_word_row_insert(win->arena, &win->w_row_list, win->cursor.row + 1);
-        
-        MK_Word *word = wrow->first;
-				
-        for(i32 i = 0; i < curs->col - 1; i++)
-        {
-					word = word->next;
-        }
-				
-        MK_Word *end = word->next;
-        MK_Word *last_end = wrow->last;
-				
-        word->next = 0;
-        wrow->last = word;
-				
-        i32 new_row_col_count = 0;
-        for (MK_Word *count = end; count != 0; count = count->next)
-        {
-					new_row_col_count++;
-        }
-				
-        wrow->num_col = curs->col;
-        
-        new_row->first = end;
-        new_row->last = last_end;
-        new_row->num_col = new_row_col_count;
-        //new_row->num_tab = 0;
-			}
-			curs->row++;
-			curs->col = 0;
+			
 		}break;
 		
 		case MK_KEY_DOWN:
@@ -220,25 +185,7 @@ void mk_cursor_mv(MK_Window *win, char c)
 		
 		case MK_KEY_BACK_SPACE:
 		{
-			MK_Word_row *above_row = mk_get_word_row(&win->w_row_list, curs->row - 1);
-			MK_Word_row *cur_row = above_row->next;
 			
-			if(curs->col > 0)
-			{
-				mk_word_remove(wrow,curs->col-- - 1);
-			}
-			else if (above_row->num_col > 0)
-			{
-				above_row->last->next = cur_row->first;
-				above_row->last = cur_row->last;
-				i32 new_col = above_row->num_col;
-				
-				above_row->num_col += cur_row->num_col;
-				
-				mk_word_row_remove(&win->w_row_list, curs->row);
-				curs->col = new_col;
-				curs->row --;
-			}
 		}break;
 		
 		default:
@@ -257,14 +204,6 @@ void mk_cursor_mv(MK_Window *win, char c)
 				
 				MK_Word *node = mk_word_insert(win->arena, wrow, curs->col);
 				node->c = c;
-				
-				if(wrow->num_col == curs->col)
-				{
-					wrow->last = node;
-				}
-				
-				wrow->num_col++;
-				
 				
 				curs->col++;
 			}
