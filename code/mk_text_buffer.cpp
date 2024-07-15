@@ -33,6 +33,7 @@ MK_Word_row *mk_word_row_push(Arena *arena, MK_Word_row_list *list)
 	
 	return out;
 }
+
 MK_Word *mk_word_insert(Arena *arena, MK_Word_row *row, i32 index)
 {
 	MK_Word *out = push_struct(arena, MK_Word);
@@ -75,32 +76,32 @@ MK_Word_row *mk_word_row_insert(Arena *arena, MK_Word_row_list *list, i32 index)
 	MK_Word_row *out = push_struct(arena, MK_Word_row);
 	if(index == 0)
 	{
-		if(list->count > 0)
-		{
+    if(list->count > 0)
+    {
 			out->next = list->first;
 			list->first = out;
-		}
-		else
-		{
+    }
+    else
+    {
 			list->first = list->last = out;
-		}
+    }
 	}
 	else if(index == list->count)
 	{
-		list->last->next = out;
-		list->last = out;
+    list->last->next = out;
+    list->last = out;
 	}
 	else
 	{
-		MK_Word_row *at = list->row_indices[index];
-		out->next = at;
-		list->row_indices[index - 1]->next = out;
+    MK_Word_row *at = list->row_indices[index];
+    out->next = at;
+    list->row_indices[index - 1]->next = out;
 	}
 	
 	//mk_update_row_index_cache(list, index);
 	for(i32 i = list->count; i > index; i--)
 	{
-		list->row_indices[i] = list->row_indices[i - 1];
+    list->row_indices[i] = list->row_indices[i - 1];
 	}
 	list->row_indices[index] = out;
 	

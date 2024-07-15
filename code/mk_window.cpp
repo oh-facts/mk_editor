@@ -145,10 +145,6 @@ void mk_cursor_mv(MK_Window *win, char c)
 				curs->row --;
 			}
 		}break;
-		case MK_KEY_ENTER:
-		{
-			//MK_Word_row *
-		}break;
 		
 		case MK_KEY_DOWN:
 		{
@@ -242,6 +238,47 @@ void mk_cursor_mv(MK_Window *win, char c)
 			}
 		}break;
 		
+		case MK_KEY_ENTER:
+		{
+			if(curs->col == 0)
+			{
+        mk_word_row_insert(win->arena, &win->w_row_list, win->cursor.row);
+			}
+			else
+			{
+				MK_Word_row *wrow = mk_get_word_row(&win->w_row_list, win->cursor.row);
+				
+        MK_Word_row *new_row = mk_word_row_insert(win->arena, &win->w_row_list, win->cursor.row + 1);
+        
+        MK_Word *word = wrow->first;
+				
+        for(i32 i = 0; i < curs->col - 1; i++)
+        {
+					word = word->next;
+        }
+				
+        MK_Word *end = word->next;
+        MK_Word *last_end = wrow->last;
+				
+        word->next = 0;
+        wrow->last = word;
+				
+        i32 new_row_col_count = 0;
+        for (MK_Word *count = end; count != 0; count = count->next)
+        {
+					new_row_col_count++;
+        }
+				
+        wrow->num_col = curs->col;
+        
+        new_row->first = end;
+        new_row->last = last_end;
+        new_row->num_col = new_row_col_count;
+        
+			}
+			curs->row++;
+			curs->col = 0;
+		}break;
 		default:
 		{
 			if ((c >= 0 && c <= 31) || c == 127)
