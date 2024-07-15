@@ -120,7 +120,6 @@ void mk_cursor_mv(MK_Window *win, char c)
 	MK_KEY key = mk_key_from_char(c);
 	MK_Cursor *curs = &win->cursor;
 	
-	MK_Word_row *wrow = mk_get_word_row(&win->w_row_list, win->cursor.row);
 	
 	switch(key)
 	{
@@ -133,7 +132,7 @@ void mk_cursor_mv(MK_Window *win, char c)
 		}break;
 		case MK_KEY_ENTER:
 		{
-			
+			//MK_Word_row *
 		}break;
 		
 		case MK_KEY_DOWN:
@@ -155,7 +154,9 @@ void mk_cursor_mv(MK_Window *win, char c)
 		}break;
 		case MK_KEY_RIGHT:
 		{
-			if(curs->col < wrow->num_col)
+			MK_Word_row *row = mk_get_word_row(&win->w_row_list, win->cursor.row);
+			
+			if(curs->col < row->num_col)
 			{
 				curs->col ++;
 			}
@@ -195,14 +196,9 @@ void mk_cursor_mv(MK_Window *win, char c)
 			}
 			else
 			{
-				if(!wrow)
-				{
-					printf("ffff\r\n");
-					INVALID_CODE_PATH();
-					break;
-				}
+				MK_Word_row *row = mk_get_word_row(&win->w_row_list, win->cursor.row);
 				
-				MK_Word *node = mk_word_insert(win->arena, wrow, curs->col);
+				MK_Word *node = mk_word_insert(win->arena, row, curs->col);
 				node->c = c;
 				
 				curs->col++;
@@ -219,13 +215,13 @@ void mk_cursor_mv(MK_Window *win, char c)
 		}
 	}
 	
-	wrow = mk_get_word_row(&win->w_row_list, win->cursor.row);
+	MK_Word_row *row = mk_get_word_row(&win->w_row_list, win->cursor.row);
 	
 	// snapping
 	{
-		if(curs->col > wrow->num_col)
+		if(curs->col > row->num_col)
 		{
-			curs->col = wrow->num_col;
+			curs->col = row->num_col;
 		}
 	}
 	
