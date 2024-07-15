@@ -3,6 +3,7 @@ void mk_window_submit(MK_Window *win)
 	write(STDOUT_FILENO, win->wbuf.base, win->wbuf.used);
 }
 
+// TODO(mizu): Calculate this based on loc
 #define CURS_X_PAD 7
 
 void mk_window_render(MK_Window *win)
@@ -183,6 +184,11 @@ void mk_cursor_mv(MK_Window *win, char c)
 			{
 				curs->col --;
 			}
+			else if(curs->row > 0)
+			{
+				curs->row --;
+				curs->col = mk_get_word_row(&win->w_row_list, curs->row)->row.num_col;
+			}
 		}break;
 		case MK_KEY_RIGHT:
 		{
@@ -216,7 +222,25 @@ void mk_cursor_mv(MK_Window *win, char c)
 		
 		case MK_KEY_BACK_SPACE:
 		{
+			MK_Word_row_node *above_row = mk_get_word_row(&win->w_row_list, curs->row - 1);
+			MK_Word_row_node *cur_row = above_row->next;
 			
+			if(curs->col > 0)
+			{
+				mk_word_remove(wrow,curs->col-- - 1);
+			}
+			else if (above_row->row.num_col > 0)
+			{
+				above_row->row.last->next = cur_row->row.first;
+				above_row->row.last = cur_row->row.last;
+				i32 new_col = above_row->row.num_col;
+				
+				above_row->row.num_col += cur_row->row.num_col;
+				
+				mk_word_row_remove(&win->w_row_list, curs->row);
+				curs->col = new_col;
+				curs->row --;
+			}
 		}break;
 		
 		default:
@@ -233,9 +257,18 @@ void mk_cursor_mv(MK_Window *win, char c)
 					break;
 				}
 				
-				MK_Word_node *node = mk_word_insert(win->arena, wrow, curs->col++);
+				MK_Word_node *node = mk_word_insert(win->arena, wrow, curs->col);
 				node->w.c = c;
+				
+				if(wrow->num_col == curs->col)
+				{
+					wrow->last = node;
+				}
+				
 				wrow->num_col++;
+				
+				
+				curs->col++;
 			}
 			
 		}break;

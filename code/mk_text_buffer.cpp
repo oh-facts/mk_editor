@@ -21,7 +21,6 @@ MK_Word_row_node *mk_word_row_push(Arena *arena, MK_Word_row_list *list)
 	
 	if(list->last)
 	{
-		out->prev = list->last;
 		list->last = list->last->next = out;
 	}
 	else
@@ -61,59 +60,59 @@ MK_Word_node *mk_word_insert(Arena *arena, MK_Word_row *row, i32 index)
 	out->next = at->next;
 	at->next = out;
 	
+	/*
+	if(index == at->row.num_col)
+	{
+		row->row.last = out;
+	}
+	*/
+	
 	return out;
 }
 
 MK_Word_row_node *mk_word_row_insert(Arena *arena, MK_Word_row_list *list, i32 index)
 {
-	if(index < 0 || index > list->count)
-	{
-		printf("Invalid index\r\n");
-		INVALID_CODE_PATH();
-	}
-	
 	MK_Word_row_node *out = push_struct(arena, MK_Word_row_node);
 	if(index == 0)
 	{
-		if(list->first)
-		{
+    if(list->count > 0)
+    {
 			out->next = list->first;
-			list->first->prev = out;
 			list->first = out;
-		}
-		else
-		{
+    }
+    else
+    {
 			list->first = list->last = out;
-		}
+    }
 	}
 	else if(index == list->count)
 	{
-		out->prev = list->last;
-		list->last->next = out;
-		list->last = out;
+    list->last->next = out;
+    list->last = out;
 	}
 	else
 	{
-		MK_Word_row_node *at = list->row_index_nodes[index];
-		out->next = at;
-		out->prev = at->prev;
-		if(at->prev) at->prev->next = out;
-		at->prev = out;
+    MK_Word_row_node *at = list->row_index_nodes[index];
+    out->next = at;
+    list->row_index_nodes[index - 1]->next = out;
 	}
 	
+	//mk_update_row_index_cache(list, index);
 	for(i32 i = list->count; i > index; i--)
 	{
-		list->row_index_nodes[i] = list->row_index_nodes[i - 1];
+    list->row_index_nodes[i] = list->row_index_nodes[i - 1];
 	}
 	list->row_index_nodes[index] = out;
 	
 	list->count++;
 	
 	return out;
+	
 }
 
-void mk_word_remove(Arena *arena, MK_Word_row *row, i32 index)
+void mk_word_remove(MK_Word_row *row, i32 index)
 {
+	row->num_col--;
 	if (index == 0)
 	{
 		//MK_Word_node *rem = row->first;
@@ -137,9 +136,10 @@ void mk_word_remove(Arena *arena, MK_Word_row *row, i32 index)
 	
 	//MK_Word_node *rem = at->next;
 	at->next = at->next->next;
+	
 }
 
-void mk_word_row_remove(Arena *arena, MK_Word_row_list *list, i32 index)
+void mk_word_row_remove(MK_Word_row_list *list, i32 index)
 {
 	if(index < 0 || index >= list->count)
 	{
@@ -150,31 +150,32 @@ void mk_word_row_remove(Arena *arena, MK_Word_row_list *list, i32 index)
 	
 	MK_Word_row_node *rem = list->row_index_nodes[index];
 	
-	if(rem->prev)
-	{
-		rem->prev->next = rem->next;
-	}
-	else
+	if(index == 0)
 	{
 		list->first = rem->next;
 	}
-	
-	if(rem->next)
-	{
-		rem->next->prev = rem->prev;
-	}
 	else
 	{
-		list->last = rem->prev;
+		list->row_index_nodes[index - 1]->next = rem->next;
 	}
 	
+	if(index == list->count - 1)
+	{
+		list->last = (index > 0) ? list->row_index_nodes[index - 1] : NULL;
+	}
+	/*
+	for(i32 i = list->count; i > index; i--)
+	{
+    list->row_index_nodes[i] = list->row_index_nodes[i - 1];
+	}
+	list->row_index_nodes[index] = out;
+	*/
 	for(i32 i = index; i < list->count - 1; i++)
 	{
 		list->row_index_nodes[i] = list->row_index_nodes[i + 1];
 	}
 	
 	list->count--;
-	
 }
 
 MK_Word_row_list mk_word_list_from_buffer(Arena *arena, u8 *file)
@@ -286,4 +287,12 @@ MK_Word_row_node *mk_get_word_row(MK_Word_row_list* list, i32 index)
 #endif
 	
 	return row_node;
+}
+
+void mk_update_row_index_cache(MK_Word_row_list *list, i32 index)
+{
+	for(i32 i = index; i < list->count - 1; i++)
+	{
+		list->row_index_nodes[i] = list->row_index_nodes[i + 1];
+	}
 }
