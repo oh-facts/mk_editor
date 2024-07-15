@@ -5,9 +5,13 @@
 #include <dlfcn.h>
 #include <sys/mman.h>
 
+global u64 total_cmt;
+global u64 total_res;
+
 internal void *os_linux_reserve(u64 size)
 {
 	void *out = mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	total_res += size;
 	return out;
 }
 
@@ -19,6 +23,7 @@ internal b32 os_linux_commit(void *ptr, u64 size)
 		printf("mprotect failed: %s\r\n", strerror(err));
 		return 0;
 	}
+	total_cmt += size;
 	return 1;
 }
 
@@ -106,7 +111,8 @@ int main(int argc, char **argv)
 			update_and_render = (update_and_render_fn)dlsym(handle, "update_and_render");
 			pf.reloaded = 1;
 		}
-		
+		pf.res = total_res;
+		pf.cmt = total_cmt;
 		update_and_render(&pf, c);
 		
 	}while(read(STDIN_FILENO, &c, 1) == 1);
