@@ -4,7 +4,7 @@
 #define MK_PLATFORM_H
 
 #define MK_VERSION_MAJOR (0)
-#define MK_VERSION_MINOR (1)
+#define MK_VERSION_MINOR (2)
 #define MK_VERSION_PATCH (0)
 
 #include "stdio.h"
