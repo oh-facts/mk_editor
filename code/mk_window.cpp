@@ -3,6 +3,8 @@ void mk_window_submit(MK_Window *win)
 	write(STDOUT_FILENO, win->wbuf.base, win->wbuf.used);
 }
 
+#define CURS_X_PAD 7
+
 void mk_window_render(MK_Window *win)
 {
 #if 0
@@ -42,6 +44,7 @@ void mk_window_render(MK_Window *win)
 	{
 		MK_Word_row *row = &row_node->row;
 		MK_Word_node *cur = row->first;
+		w_buffer_pushf(&win->wbuf, "%5d| ", win->scroll_row + i + 1);
 		while(cur)
 		{
 			if(cur->w.is_tab)
@@ -66,6 +69,7 @@ void mk_window_render(MK_Window *win)
 		}
 		i++;
 		row_node = row_node->next;
+		
 	}
 	
 	
@@ -107,7 +111,7 @@ void mk_window_begin_render(MK_Window *win)
 
 void mk_window_end_render(MK_Window *win)
 {
-	w_buffer_push_cursor_pos(&win->wbuf, win->cursor.col, win->cursor.row - win->scroll_row);
+	w_buffer_push_cursor_pos(&win->wbuf, win->cursor.col + CURS_X_PAD, win->cursor.row - win->scroll_row);
 	w_buffer_push_show_cursor(&win->wbuf);
 }
 
@@ -202,28 +206,17 @@ void mk_cursor_mv(MK_Window *win, char c)
 		case MK_KEY_PAGE_UP:
 		case MK_KEY_PAGE_DOWN:
 		{
-			
+			// jump to page end if not at page end.
+			// jump by a page if at page end.
 		}break;
 		case MK_KEY_DEL:
 		{
-			if(wrow->num_col > 0 && curs->col < wrow->num_col)
-			{
-				mk_word_remove(win->arena, wrow, curs->col);
-				wrow->num_col--;
-			}
+			
 		}break;
+		
 		case MK_KEY_BACK_SPACE:
 		{
-			if(wrow->num_col > 0 && curs->col > 0)
-			{
-				mk_word_remove(win->arena, wrow, --curs->col);
-				wrow->num_col--;
-			}
 			
-			if(curs->col == 0)
-			{
-				mk_word_row_remove(win->arena, &win->w_row_list, curs->row);
-			}
 		}break;
 		
 		default:

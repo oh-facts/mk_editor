@@ -24,6 +24,14 @@ struct MK_Word_node
 	MK_Word_node *next;
 	MK_Word w;
 };
+// TODO(mizu):
+// then complete making row_index_nodes a virtual array
+// then bring the status bar up to mark, and copy over any other changes you made
+// then make a free list so you can take care of deleted nodes
+// that will be end of second pass.
+// then work on ykw fr
+// then work on game
+// It is 9 pm. I want to sleep on time for once. gn
 
 struct MK_Word_row
 {
