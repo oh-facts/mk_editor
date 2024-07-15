@@ -10,14 +10,6 @@ struct MK_Text_buffer
 	Str8 str;
 };
 
-struct MK_Word
-{
-	MK_Word *next;
-	char c;//[WORD_CAP];
-	i32 len;
-	b32 is_tab;
-	b32 is_space;
-};
 
 // TODO(mizu):
 // then complete making row_index_nodes a virtual array
@@ -28,6 +20,14 @@ struct MK_Word
 // then work on game
 // It is 9 pm. I want to sleep on time for once. gn
 
+struct MK_Word
+{
+	MK_Word *next;
+	char c;//[WORD_CAP];
+	i32 len;
+	b32 is_tab;
+	b32 is_space;
+};
 struct MK_Word_row
 {
 	MK_Word *first;

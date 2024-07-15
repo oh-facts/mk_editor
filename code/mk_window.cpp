@@ -38,48 +38,60 @@ void mk_window_render(MK_Window *win)
 	}
 #else
 	i32 i = 0;
-	
 	MK_Word_row *row = mk_get_word_row(&win->w_row_list, win->scroll_row);
 	
-	while(row && i < win->row)
+	while (i < win->row)
 	{
-		MK_Word *cur = row->first;
-		w_buffer_pushf(&win->wbuf, "%5d| ", win->scroll_row + i + 1);
-		while(cur)
-		{
-			if(cur->is_tab)
+    if (row)
+    {
+			MK_Word *cur = row->first;
+			w_buffer_pushf(&win->wbuf, "%5d| ", win->scroll_row + i + 1);
+			while (cur)
 			{
-				w_buffer_push(&win->wbuf, " ", 1);
+				if (cur->is_tab)
+				{
+					w_buffer_push(&win->wbuf, " ", 1);
+				}
+				else if (cur->is_space)
+				{
+					w_buffer_push(&win->wbuf, " ", 1);
+				}
+				else
+				{
+					w_buffer_push(&win->wbuf, &cur->c, 1);
+				}
+				cur = cur->next;
 			}
-			else if(cur->is_space)
+			
+			w_buffer_push(&win->wbuf, "\x1b[K", 3);
+			if (i < win->row - 1)
 			{
-				w_buffer_push(&win->wbuf, " ", 1);
+				w_buffer_push(&win->wbuf, "\r\n", 2);
 			}
-			else
+			i++;
+			row = row->next;
+    }
+    else
+    {
+			w_buffer_push(&win->wbuf, "~", 1);
+			w_buffer_push(&win->wbuf, "\x1b[K", 3);
+			if (i < win->row - 1)
 			{
-				w_buffer_push(&win->wbuf, &cur->c, 1);
+				w_buffer_push(&win->wbuf, "\r\n", 2);
 			}
-			cur = cur->next;
-		}
-		
-		w_buffer_push(&win->wbuf, "\x1b[K", 3);
-		if(i < win->row - 1)
-		{
-			w_buffer_push(&win->wbuf, "\r\n", 2);
-		}
-		i++;
-		row = row->next;
-		
+			i++;
+			
+    }
 	}
-	
 	
 	//mk_window_submit(win);
 	//INVALID_CODE_PATH();
 	//printf("\r\n");
 	
 #endif
-	
-	w_buffer_push_cursor_pos(&win->wbuf, win->col - win->status_msg.len, win->row - 1);
+	w_buffer_push(&win->wbuf, "\r\n", 2);
+	w_buffer_push(&win->wbuf, "\x1b[K", 3);
+	w_buffer_push_cursor_pos(&win->wbuf, win->col - win->status_msg.len, win->row);
 	w_buffer_push(&win->wbuf, (char*)win->status_msg.c, win->status_msg.len);
 	
 	//w_buffer_push(&win->wbuf, "~", 1);
@@ -90,7 +102,7 @@ void mk_set_win_size(MK_Window *win)
 	winsize ws;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
 	
-	win->row = ws.ws_row;
+	win->row = ws.ws_row - 1;
 	win->col = ws.ws_col;
 }
 
@@ -162,6 +174,7 @@ void mk_cursor_mv(MK_Window *win, char c)
 			}
 			else
 			{
+				curs->col = 0;
 				curs->row++;
 			}
 		}break;
@@ -181,12 +194,38 @@ void mk_cursor_mv(MK_Window *win, char c)
 		}break;
 		case MK_KEY_DEL:
 		{
-			
+			MK_Word_row *row = mk_get_word_row(&win->w_row_list, win->cursor.row);
+			if(curs->col < row->num_col)
+			{
+				mk_word_remove(row, curs->col);
+			}
+			else
+			{
+				if(curs->row + 1 < win->w_row_list.count)
+				{
+					mk_word_row_remove(&win->w_row_list, curs->row + 1);
+				}
+				
+				//curs->col += new_col;
+			}
 		}break;
 		
 		case MK_KEY_BACK_SPACE:
 		{
-			
+			if(curs->col > 0)
+			{
+				MK_Word_row *row = mk_get_word_row(&win->w_row_list, win->cursor.row);
+				
+				mk_word_remove(row, --curs->col);
+			}
+			else if(curs->row > 0)
+			{
+				i32 new_col = win->w_row_list.row_indices[curs->row - 1]->num_col;
+				
+				mk_word_row_remove(&win->w_row_list, curs->row);
+				curs->row--;
+				curs->col = new_col;
+			}
 		}break;
 		
 		default:
@@ -225,5 +264,8 @@ void mk_cursor_mv(MK_Window *win, char c)
 		}
 	}
 	
+	{
+		
+	}
 	
 }

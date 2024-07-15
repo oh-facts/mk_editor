@@ -33,43 +33,40 @@ MK_Word_row *mk_word_row_push(Arena *arena, MK_Word_row_list *list)
 	
 	return out;
 }
-
 MK_Word *mk_word_insert(Arena *arena, MK_Word_row *row, i32 index)
 {
-	MK_Word *out = 0;
+	MK_Word *out = push_struct(arena, MK_Word);
+	out->next = 0;
+	out->c = 0;
+	out->len = 0;
+	out->is_tab = false;
+	out->is_space = false;
 	
-	if(index == row->num_col)
+	if (index <= 0)
 	{
-		out = mk_word_push(arena, row);
+		out->next = row->first;
+		row->first = out;
+		if (row->last == 0)
+		{
+			row->last = out;
+		}
 	}
 	else
 	{
-		out = push_struct(arena, MK_Word);
-		if(index == 0)
+		MK_Word *prev = row->first;
+		for (i32 i = 1; i < index && prev->next != 0; ++i)
 		{
-			out->next = row->first;
-			row->first = out;
+			prev = prev->next;
 		}
-		else
+		out->next = prev->next;
+		prev->next = out;
+		if (prev == row->last)
 		{
-			MK_Word *at = row->first;
-			for(i32 i = 0; i < index - 1; i ++)
-			{
-				if(at == NULL || at->next == NULL)
-				{
-					printf("not possible dont\r\n");
-					INVALID_CODE_PATH();
-				}
-				at = at->next;
-			}
-			
-			out->next = at->next;
-			at->next = out;
-			
+			row->last = out;
 		}
-		row->num_col++;
 	}
 	
+	row->num_col++;
 	return out;
 }
 
@@ -115,69 +112,89 @@ MK_Word_row *mk_word_row_insert(Arena *arena, MK_Word_row_list *list, i32 index)
 
 void mk_word_remove(MK_Word_row *row, i32 index)
 {
-	row->num_col--;
-	if (index == 0)
+	if (row->first == 0)
 	{
-		//MK_Word_node *rem = row->first;
-		row->first = row->first->next;
+		printf("don't come here\r\n");
+		INVALID_CODE_PATH();
 		
-		return;
 	}
 	
-	MK_Word *at = row->first;
-	
-	for(i32 i = 0; i < index - 1; i ++)
+	if (index <= 0)
 	{
-		if(at == NULL || at->next == NULL)
+		MK_Word *to_remove = row->first;
+		row->first = to_remove->next;
+		if (row->last == to_remove)
 		{
-			printf("%s %d\r\n", __FILE__, __LINE__);
-			INVALID_CODE_PATH();
-			return;
+			row->last = 0;
 		}
-		at = at->next;
+	}
+	else
+	{
+		MK_Word *prev = row->first;
+		for (i32 i = 1; i < index && prev->next != 0; ++i)
+		{
+			prev = prev->next;
+		}
+		if (prev->next != 0)
+		{
+			MK_Word *to_remove = prev->next;
+			prev->next = to_remove->next;
+			if (row->last == to_remove)
+			{
+				row->last = prev;
+			}
+		}
 	}
 	
-	//MK_Word_node *rem = at->next;
-	at->next = at->next->next;
-	
+	row->num_col--;
 }
 
 void mk_word_row_remove(MK_Word_row_list *list, i32 index)
 {
-	if(index < 0 || index >= list->count)
+	if (index < 0 || index >= list->count)
 	{
-		printf("Invalid index\r\n");
 		INVALID_CODE_PATH();
 		return;
 	}
 	
-	MK_Word_row *rem = list->row_indices[index];
+	MK_Word_row *to_remove = list->row_indices[index];
 	
-	if(index == 0)
+	if (index == 0)
 	{
-		list->first = rem->next;
+		list->first = to_remove->next;
+		if (list->last == to_remove)
+		{
+			list->last = 0;
+		}
 	}
 	else
 	{
-		list->row_indices[index - 1]->next = rem->next;
+		MK_Word_row *prev = list->row_indices[index - 1];
+		prev->next = to_remove->next;
+		if (list->last == to_remove)
+		{
+			list->last = prev;
+		}
+		
+		if (to_remove->first)
+		{
+			if (prev->last)
+			{
+				prev->last->next = to_remove->first;
+			}
+			else
+			{
+				prev->first = to_remove->first;
+			}
+			prev->last = to_remove->last;
+			prev->num_col += to_remove->num_col;
+		}
 	}
 	
-	if(index == list->count - 1)
-	{
-		list->last = (index > 0) ? list->row_indices[index - 1] : NULL;
-	}
-	/*
-	for(i32 i = list->count; i > index; i--)
-	{
-		list->row_index_nodes[i] = list->row_index_nodes[i - 1];
-	}
-	list->row_index_nodes[index] = out;
-	*/
-	for(i32 i = index; i < list->count - 1; i++)
+	for (i32 i = index; i < list->count - 1; ++i)
 	{
 		list->row_indices[i] = list->row_indices[i + 1];
 	}
-	
 	list->count--;
 }
 
