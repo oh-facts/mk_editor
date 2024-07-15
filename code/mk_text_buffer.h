@@ -10,9 +10,7 @@ struct MK_Text_buffer
 	Str8 str;
 };
 
-
 // TODO(mizu):
-// then complete making row_index_nodes a virtual array
 // then bring the status bar up to mark, and copy over any other changes you made
 // then make a free list so you can take care of deleted nodes
 // that will be end of second pass.
@@ -47,7 +45,9 @@ struct MK_Word_row_list
 	
 	i32 count;
 	
-	MK_Word_row *row_indices[100000];
+	Arena *row_indices_arena;
+	MK_Word_row **row_indices;
+	i32 row_indices_cap;
 };
 
 internal MK_Word *mk_word_push(Arena *arena, MK_Word_row *row);

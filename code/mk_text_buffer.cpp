@@ -27,6 +27,14 @@ MK_Word_row *mk_word_row_push(Arena *arena, MK_Word_row_list *list)
 	{
 		list->last = list->first = out;
 	}
+	
+	if(list->row_indices_cap <= list->count)
+	{
+		MK_Word_row **row_index = list->row_indices + list->row_indices_cap;
+		row_index = push_array(list->row_indices_arena, MK_Word_row *, 10000);
+		list->row_indices_cap += 10000;
+	}
+	
 	list->row_indices[list->count] = out;
 	
 	list->count++;
@@ -104,6 +112,15 @@ MK_Word_row *mk_word_row_insert(Arena *arena, MK_Word_row_list *list, i32 index)
     list->row_indices[i] = list->row_indices[i - 1];
 	}
 	list->row_indices[index] = out;
+	
+	
+	
+	if(list->row_indices_cap <= list->count)
+	{
+		MK_Word_row **row_index = list->row_indices + list->row_indices_cap;
+		row_index = push_array(list->row_indices_arena, MK_Word_row *, 10000);
+		list->row_indices_cap += 10000;
+	}
 	
 	list->count++;
 	
@@ -202,7 +219,9 @@ void mk_word_row_remove(MK_Word_row_list *list, i32 index)
 MK_Word_row_list mk_word_list_from_buffer(Arena *arena, u8 *file)
 {
 	MK_Word_row_list w_row_list = {};
-	
+	w_row_list.row_indices_arena = arena_create(ARENA_COMMIT_SIZE, Gigabytes(1));
+	w_row_list.row_indices = push_array(w_row_list.row_indices_arena, MK_Word_row *, 10000);
+	w_row_list.row_indices_cap = 10000;
 	char *c = (char*)file;
 	
 	MK_Word_row *row = mk_word_row_push(arena, &w_row_list);
