@@ -45,21 +45,33 @@ void update_and_render(MK_Platform *pf, char c)
 			Arena_temp temp = arena_temp_begin(editor->transient);
 			Str8 arg_str = push_str8f(editor->transient, pf->argv[1]);
 			char *file_name = file_name_from_path(editor->transient, arg_str);
-			Str8 abs_file_path = str8_join(editor->transient, pf->app_dir, arg_str);
+			
+			Str8 abs_file_path = str8_join(editor->arena, pf->app_dir, arg_str);
 			
 			printf("%s\r\n", abs_file_path.c);
 			printf("%s\r\n", file_name);
 			
 			u8 *file = read_file(editor->transient, (char*)abs_file_path.c, FILE_TYPE_BINARY);
-			MK_Editor *editor = (MK_Editor*)pf->memory;
-			editor->window.w_row_list = mk_word_list_from_buffer(arena, file);
 			
+			MK_Editor *editor = (MK_Editor*)pf->memory;
+			editor->window.file_name = abs_file_path;
+			
+			if(file)
+			{
+				editor->window.w_row_list = mk_word_list_from_buffer(arena, file);
+			}
+			else
+			{
+				editor->window.w_row_list = mk_word_list_new_file(arena);
+			}
 			//editor->window.scroll_row_node = editor->window.w_row_list.first;
 			
 			arena_temp_end(&temp);
 		}
 		else
 		{
+			submit_clear_screen();
+			printf("Yout must pass a file name \r\n");
 			INVALID_CODE_PATH();
 		}
 		

@@ -59,8 +59,20 @@ internal MK_Word_row *mk_word_row_insert(Arena *arena, MK_Word_row_list *list, i
 internal void mk_word_remove(MK_Word_row *row, i32 index);
 internal void mk_word_row_remove(MK_Word_row_list *list, i32 index);
 
-internal MK_Word_row_list mk_word_list_from_buffer(Arena *arena, u8 *file);
+internal MK_Word_row_list mk_word_list_from_file(Arena *arena, u8 *file);
+internal MK_Word_row_list mk_word_list_new_file(Arena *arena);
+internal MK_Word_row_list mk_word_list(Arena *arena);
+
+internal MK_Word_row_list mk_word_list_alloc(Arena *arena);
 
 internal MK_Word_row *mk_get_word_row(MK_Word_row_list* list, i32 index);
 
+
+struct File_content
+{
+	char *data;
+	size_t size;
+};
+
+internal File_content mk_write_row_list_to_file(Arena *arena, MK_Word_row_list *list);
 #endif //MK_TEXT_BUFFER_H

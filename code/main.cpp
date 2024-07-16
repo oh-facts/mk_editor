@@ -5,6 +5,33 @@
 #include <dlfcn.h>
 #include <sys/mman.h>
 
+global const char *welcome_msg = "⠀⠀⠀⠀⠀⠀\r\n\
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣤⣤⠤⣬⣿⣦⣠⣤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n\
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣤⠶⠛⠋⠉⠀⠀⠀⠀⠈⠙⠋⠛⠛⠲⢦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n\
+⠀⠀⠀⠀⠀⠀⠀⢀⣤⡶⠞⠉⠁⢀⣀⣠⠤⠤⠤⣀⣀⣀⣠⠤⠴⠶⢤⡀⠀⠈⠙⢵⡄⠀⠀⠀⠀⠀⠀⠀\r\n\
+⠀⠀⠀⠀⢀⣤⠶⠋⠁⢀⣤⠖⠋⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⣄⠀⠀⠙⢷⡀⠀⠀⠀⠀⠀\r\n\
+⠀⠀⠀⣰⠟⠁⢀⡴⠊⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣦⡀⠀⠈⢻⣆⠀⠀⠀⠀\r\n\
+⠀⠀⣾⠃⢀⡴⠋⠀⠀⣠⡆⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠷⣄⠀⠀⠹⣧⠀⠀⠀\r\n\
+⠀⣾⠃⢠⠏⠀⠀⢀⡼⠋⠀⠀⠀⠀⠀⠀⡾⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣦⠀⠙⢧⡀⠀⠘⣧⠀⠀\r\n\
+⢠⡏⢠⠏⠀⠀⢠⡟⠁⠀⠀⠀⠀⠀⠀⣼⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢧⡀⠈⢳⡄⠀⠘⣧⠀\r\n\
+⣸⡇⡾⠀⣶⣰⢿⠇⠀⢀⡟⠀⠀⠀⢠⣿⠀⠀⠀⠀⠀⠀⢠⡆⠀⢻⡄⠀⠀⠀⠀⠈⣧⠀⢰⣿⡄⠀⢹⡇\r\n\
+⣿⢃⡇⠀⣿⡏⣿⠀⠀⣼⠁⠀⡄⠀⢸⣿⠀⠀⠀⠀⠀⠀⠈⡇⠀⠘⡇⠀⠀⠀⠀⠀⠸⣇⠈⣯⣷⠀⠀⣷\r\n\
+⣿⢰⡇⠀⣿⠃⣿⠀⠀⣿⠀⠘⡇⠀⢸⣿⠀⠀⠀⢠⠀⠀⢀⡇⠀⢀⡇⠐⣆⠀⢷⡀⠀⢻⡀⣿⢹⡆⠀⢿\r\n\
+⣿⠸⡇⠀⢻⡀⢿⡀⢠⣿⠀⢠⣧⠀⠀⢻⡀⠀⠀⣿⠀⠀⢸⣇⡀⣼⢹⡄⣿⣆⢸⣷⡀⢘⡇⣿⢸⡇⠀⣼\r\n\
+⢹⡇⡇⠀⠸⣇⠘⣇⢸⡟⣇⣸⠛⣧⠀⣿⣇⠀⢀⡇⠀⠀⣼⣽⣰⠃⠀⢷⣿⢿⡄⣇⣧⣸⣿⣿⣿⡇⠀⣿\r\n\
+⠘⣷⡹⡄⠀⢻⡄⠸⣿⡧⢽⣿⠤⠼⣆⢸⣿⡄⢸⣷⠀⢰⡿⣿⣓⣒⣖⣚⣿⠚⢿⣿⣹⣿⣿⢹⣿⠇⢰⡏\r\n\
+⠀⠘⣧⡱⣼⠀⠻⠠⣿⢷⡟⡻⣿⣿⡟⢾⡝⢻⣼⣿⣠⠟⠹⠇⢉⣻⣿⡿⢛⠟⠀⢉⡽⢻⡟⣸⡿⢀⣿⠀\r\n\
+⠀⠀⠘⢷⣽⡄⠀⠀⠙⣧⣄⠀⠈⠉⠉⠈⠁⠀⠉⠋⠁⠀⠀⠀⠀⠀⠀⠀⠁⠀⣠⣾⠅⢸⣇⡟⣇⣾⠃⠀\r\n\
+⠀⠀⠀⠈⠿⣇⠀⢸⡆⠙⢿⣧⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣼⠿⠋⣴⢀⣜⣷⡟⠁⠀⠀\r\n\
+⠀⠀⠀⠀⠘⣿⡆⢠⣿⣄⠈⠳⣌⠙⠓⠆⠀⠀⠀⠓⠀⠀⣠⠄⠀⠀⡴⢞⣽⡃⢀⣼⣇⣼⣟⡿⠁⠀⠀⠀\r\n\
+⠀⠀⠀⠀⠀⠘⢿⣼⣿⠻⣿⣮⣿⡷⣄⡀⠀⠀⠀⠉⠋⠉⠁⠀⠀⣠⣴⣿⣿⣧⡾⢻⣿⡏⠀⠀⠀⠀⠀⠀\r\n\
+⠀⠀⠀⠀⠀⠀⠈⠻⣿⠀⠀⠙⠻⠿⠛⠛⣷⣤⣀⠀⠀⠀⣀⠴⠚⢱⢸⡇⠘⠋⠀⠈⠿⠇⠀⠀⠀⠀⠀⠀\r\n\
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⡤⠾⡏⠙⠓⠒⠋⠁⠀⠀⢸⢸⠷⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n\
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡾⠟⢱⠀⢀⡿⠀⠀⠀⠀⠀⠀⠀⠘⣟⣆⡤⠙⢷⣄⠀⠀⠀⠀⠀⠀⠀⠀\r\n\
+⠀⠀⠀⠀⠀⠀⠀⢀⣠⡶⠟⠉⠀⠀⠘⣖⠋⠀⠀⠀⠀⠀⠀⠀⠀⢀⡼⠋⠠⢄⠀⠙⠻⣢⣀⠀⠀⠀⠀⠀\r\n\
+⠀⠀⠀⠀⠀⣤⠾⠛⠁⠀⠀⠀⠀⠀⠀⠈⢧⡀⠀⠳⠤⠖⠂⣠⠞⠁⠀⠀⠀⠀⠑⢄⠀⠈⠙⠷⣣⣀⡀⠀\r\n\
+⠀⠀⢀⣤⡾⠛⠙⣲⣤⣀⡀⠀⠀⠀⠀⠀⠀⠳⣆⠀⢀⣤⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠑⠤⣀⣀⡬⢵⡯⡄";
+
 global u64 total_cmt;
 global u64 total_res;
 
@@ -78,15 +105,24 @@ int main(int argc, char **argv)
 	submit_clear_screen();
 	submit_reset_cursor();
 	
-	printf("Do not enter is written on the doorway.\r\n");
-	printf("Why can't everyone just go away.\r\n");
+	printf("%s\r\n\r\n", welcome_msg);
+	
+	printf("\"Do not enter\" is written on the doorway.\r\n");
+	printf("Why can't everyone just go away?\r\n");
+	printf("Except you, you can stay\r\n");
 	
 	printf("\r\n\r\n");
 	
 	printf("Welcome to the mk editor dev build\r\n");
 	
-	printf("ctrl + q to quit\r\n");
-	printf("ctrl + r to hot reload\r\n");
+	printf("ctrl + s   : save\r\n");
+	printf("ctrl + q   : quit\r\n");
+	printf("ctrl + r   : hot reload\r\n");
+	printf("arrow keys : move\r\n");
+	printf("home       : line start\r\n");
+	printf("end        : line end\r\n");
+	printf("ctrl home  : file start\r\n");
+	printf("ctrl end   : file end\r\n");
 	
 	printf("\r\n\r\n");
 	

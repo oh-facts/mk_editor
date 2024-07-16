@@ -11,6 +11,7 @@
 #include "string.h"
 #include <unistd.h>
 #include "base_core.h"
+
 typedef void *(*os_reserve_fn)(u64 size);
 typedef b32 (*os_commit_fn)(void *ptr, u64 size);
 typedef void (*os_decommit_fn)(void *ptr, u64 size);
@@ -207,13 +208,14 @@ enum FILE_TYPE
   FILE_TYPE_COUNT
 };
 
+// ty pine
 #if defined(OS_WIN32)
 #define _file_open(file, filepath, mode) fopen_s(file, filepath, mode)
 #elif defined (OS_LINUX)
 #define _file_open(file, filepath, mode) *file = fopen(filepath, mode)
 #endif
 
-u8 *read_file(Arena *arena, const char *filepath, FILE_TYPE type)
+internal u8 *read_file(Arena *arena, const char *filepath, FILE_TYPE type)
 {
   FILE *file;
   
@@ -223,13 +225,14 @@ u8 *read_file(Arena *arena, const char *filepath, FILE_TYPE type)
     "rb"
   };
   
-  _file_open(&file, filepath, file_type_table[type]);
-  
-  if(!file)
-  {
-    printf("file %s not found\n", filepath);
-    INVALID_CODE_PATH();
+	if (access(filepath, F_OK) != 0)
+	{
+    file = fopen(filepath, "wb+");
+    
+    fclose(file);
   }
+	
+  _file_open(&file, filepath, file_type_table[type]);
   
   fseek(file, 0, SEEK_END);
   
@@ -246,4 +249,21 @@ u8 *read_file(Arena *arena, const char *filepath, FILE_TYPE type)
   return buffer;
 }
 
+internal void write_file(const char *filepath, FILE_TYPE type, void *data, size_t size)
+{
+	FILE *file;
+	
+	local_persist char *file_type_table[FILE_TYPE_COUNT] = 
+  {
+    "w",
+    "wb"
+  };
+	
+	_file_open(&file, filepath, file_type_table[type]);
+	
+	fwrite(data, size, 1, file);
+	
+	fclose(file);
+	
+}
 #endif //MK_PLATFORM_H

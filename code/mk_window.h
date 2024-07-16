@@ -7,10 +7,6 @@ struct MK_Cursor
 {
 	i32 row;
 	i32 col;
-	
-	//NOTE(mizu): consider caching these. Will have to update them
-	//MK_Word_row_node *row;
-	//MK_Word_node *col;
 };
 
 struct MK_Window
@@ -26,6 +22,8 @@ struct MK_Window
 	
 	MK_Word_row_list w_row_list;
 	Str8 status_msg;
+	
+	Str8 file_name;
 };
 
 internal void mk_window_submit(MK_Window *win);

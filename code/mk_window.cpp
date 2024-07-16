@@ -138,6 +138,14 @@ void mk_cursor_mv(MK_Window *win, char c)
 	
 	switch(key)
 	{
+		case MK_KEY_CTRL_S:
+		{
+			Arena_temp scratch = scratch_begin(0, 0);
+			File_content out = mk_write_row_list_to_file(scratch.arena, &win->w_row_list);
+			
+			write_file((char*)win->file_name.c, FILE_TYPE_TEXT, out.data, out.size);
+			scratch_end(&scratch);
+		}break;
 		case MK_KEY_UP:
 		{
 			if(curs->row != 0)

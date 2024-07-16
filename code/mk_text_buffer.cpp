@@ -218,10 +218,9 @@ void mk_word_row_remove(MK_Word_row_list *list, i32 index)
 
 MK_Word_row_list mk_word_list_from_buffer(Arena *arena, u8 *file)
 {
-	MK_Word_row_list w_row_list = {};
-	w_row_list.row_indices_arena = arena_create(ARENA_COMMIT_SIZE, Gigabytes(1));
-	w_row_list.row_indices = push_array(w_row_list.row_indices_arena, MK_Word_row *, 10000);
-	w_row_list.row_indices_cap = 10000;
+	
+	MK_Word_row_list w_row_list = mk_word_list(arena);
+	
 	char *c = (char*)file;
 	
 	MK_Word_row *row = mk_word_row_push(arena, &w_row_list);
@@ -303,6 +302,24 @@ MK_Word_row_list mk_word_list_from_buffer(Arena *arena, u8 *file)
 	return w_row_list;
 }
 
+MK_Word_row_list mk_word_list_new_file(Arena *arena)
+{
+	MK_Word_row_list out = mk_word_list(arena);
+	mk_word_row_push(arena, &out);
+	
+	return out;
+}
+
+MK_Word_row_list mk_word_list(Arena *arena)
+{
+	MK_Word_row_list w_row_list = {};
+	w_row_list.row_indices_arena = arena_create(ARENA_COMMIT_SIZE, Gigabytes(1));
+	w_row_list.row_indices = push_array(w_row_list.row_indices_arena, MK_Word_row *, 10000);
+	w_row_list.row_indices_cap = 10000;
+	
+	return w_row_list;
+}
+
 MK_Word_row *mk_get_word_row(MK_Word_row_list* list, i32 index)
 {
 	
@@ -326,4 +343,41 @@ MK_Word_row *mk_get_word_row(MK_Word_row_list* list, i32 index)
 #endif
 	
 	return row;
+}
+
+File_content mk_write_row_list_to_file(Arena *arena, MK_Word_row_list *list)
+{
+	File_content out = {};
+	out.data = push_array(arena, char, arena->cmt - arena->used);
+	MK_Word_row *row = list->first;
+	i32 count = 0;
+	while (row)
+	{
+    MK_Word *cur = row->first;
+		
+		while (cur)
+		{
+			if (cur->is_tab)
+			{
+				out.data[count++] = '\t';
+			}
+			else if (cur->is_space)
+			{
+				out.data[count++] = ' ';
+			}
+			else
+			{
+				out.data[count++] = cur->c;
+			}
+			cur = cur->next;
+		}
+		
+		out.data[count++] = '\r';
+		out.data[count++] = '\n';
+		
+		row = row->next;
+	}
+	out.size = count;
+	return out;
+	
 }

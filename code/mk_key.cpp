@@ -101,8 +101,10 @@ MK_KEY mk_key_from_char(char c)
 	{
 		out = MK_KEY_ENTER;
 	}
-	
-	
+	else if(c == CTRL_KEY('S'))
+	{
+		out = MK_KEY_CTRL_S;
+	}
 	
 	return out;
 }
