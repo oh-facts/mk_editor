@@ -13,6 +13,8 @@ if [ "$help" == "1" ]; then
     echo "clean: delete out/"
     echo "debug: debug build/"
     echo "release: release build/"
+    echo "cloc: tells time"
+    exit 0
 fi
 
 common_flags="-std=c++17 -msse4.1 -fno-rtti -fno-exceptions -Wall -Wno-unused-function -Wno-writable-strings -Wno-comment"
@@ -20,6 +22,7 @@ common_flags="-std=c++17 -msse4.1 -fno-rtti -fno-exceptions -Wall -Wno-unused-fu
 debug_build="-O0 -g"
 release_build="-O3"
 
+[ "$cloc" == "1" ] && cloc --exclude-list-file=.clocignore "code/" && exit 0
 [ "$pf" != "1" ] && [ "$mk" != "1" ] && pf="1" && mk="1" 
 [ "$debug" == "1" ] && build_type="$debug_build" 
 [ "$release" == "1" ] && build_type="$release_build"
