@@ -5,7 +5,7 @@ Nameless Terminal Text Editor v0.2.0
 second pass complete
 
 ## Build
-Tested on wsl ubuntu.
+Tested **only** on wsl ubuntu.
 
 Following arguments can be passed
 `pf`, `mk`, `clean`, `debug`, `release`, `help`
