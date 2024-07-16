@@ -36,6 +36,8 @@ This is a third pass issue.
 - There is no horizontal scrolling and default terminal linewrap makes everything wonky. Beware.
 This is a third pass issue.
 
+- I don't respect tabs, cr, lf or crlf. All your files will be saved as crlf and all tabs are 1 space. Please don't use this editor for anything crucial for now.
+
 ## Contributing
 
 Open an issue to report bugs or otherwise.
