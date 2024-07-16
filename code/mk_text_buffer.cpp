@@ -216,7 +216,7 @@ void mk_word_row_remove(MK_Word_row_list *list, i32 index)
 	list->count--;
 }
 
-MK_Word_row_list mk_word_list_from_buffer(Arena *arena, u8 *file)
+MK_Word_row_list mk_word_list_from_file(Arena *arena, u8 *file)
 {
 	
 	MK_Word_row_list w_row_list = mk_word_list(arena);

@@ -39,3 +39,5 @@ This is a third pass issue.
 ## Contributing
 
 Open an issue to report bugs or otherwise.
+
+Currently I am working on mac compat and doing an organization / bug fix pass

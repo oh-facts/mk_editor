@@ -58,7 +58,7 @@ void update_and_render(MK_Platform *pf, char c)
 			
 			if(file)
 			{
-				editor->window.w_row_list = mk_word_list_from_buffer(arena, file);
+				editor->window.w_row_list = mk_word_list_from_file(arena, file);
 			}
 			else
 			{
