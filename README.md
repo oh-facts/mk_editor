@@ -24,13 +24,16 @@ it will me opened. If you `ctrl + s`, it will be saved
 
 Keybinds are on the homepage
 
-## Known bugs
+## Known issues
 
 - Idk how to recreate it. It triggers after entering and deleting in a certain order.
 I put together my enter in a minute so there is probably some edge case I am missing
 This is a third pass issue.
 
 - I am not freeing memory.
+This is a third pass issue.
+
+- There is no horizontal scrolling and default terminal linewrap makes everything wonky. Beware.
 This is a third pass issue.
 
 ## Contributing
