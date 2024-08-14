@@ -1,6 +1,10 @@
-# MK Text Editor
-
-Nameless Terminal Text Editor v0.2.0
+<p>
+	<h1 align="center">MK Text Editor</h2>
+	<p align="center">C, Termios, Linux</p>
+<p align="center">
+  <img width="600"src="https://github.com/user-attachments/assets/b9000243-b2be-4019-90d0-018d98e9b7e4">
+</p>
+</p>
 
 second pass complete
 
